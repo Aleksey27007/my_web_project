@@ -11,9 +11,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Home page controller.
@@ -23,6 +25,7 @@ import java.util.Locale;
  */
 @WebServlet(name = "homeController", urlPatterns = "/")
 public class HomeController extends HttpServlet {
+    private static final Logger logger = LogManager.getLogger();
     private final CompetitionService competitionService;
 
     public HomeController() {
@@ -33,20 +36,51 @@ public class HomeController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            HttpSession session = request.getSession(false);
-            User user = session != null ? (User) session.getAttribute("user") : null;
+            HttpSession session = request.getSession(true);
             
-            List<Competition> competitions = competitionService.findAll();
+            // Set default locale to English if not set
+            if (session.getAttribute("locale") == null) {
+                session.setAttribute("locale", java.util.Locale.ENGLISH);
+            }
+            
+            User user = (User) session.getAttribute("user");
+            
+            logger.info("HomeController: Starting to load competitions");
+            List<Competition> competitions;
+            try {
+                competitions = competitionService.findAll();
+                logger.info("HomeController: competitionService.findAll() returned: {}", 
+                        competitions != null ? "list with " + competitions.size() + " items" : "null");
+            } catch (Exception e) {
+                logger.error("HomeController: Error calling competitionService.findAll()", e);
+                competitions = new java.util.ArrayList<>();
+            }
+            
+            if (competitions == null) {
+                logger.warn("HomeController: competitions is null, initializing empty list");
+                competitions = new java.util.ArrayList<>();
+            }
+            
+            logger.info("HomeController: Setting competitions attribute with {} items for user: {}", 
+                    competitions.size(), 
+                    user != null ? user.getUsername() : "anonymous");
             
             request.setAttribute("competitions", competitions);
             request.setAttribute("user", user);
             
             request.getRequestDispatcher("/index.jsp").forward(request, response);
         } catch (Exception e) {
-            org.apache.logging.log4j.LogManager.getLogger(HomeController.class)
-                    .error("Error in HomeController", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                    "Error loading page: " + e.getMessage());
+            logger.error("Error in HomeController", e);
+            // Set empty list instead of null to prevent JSP errors
+            request.setAttribute("competitions", new java.util.ArrayList<>());
+            request.setAttribute("user", null);
+            try {
+                request.getRequestDispatcher("/index.jsp").forward(request, response);
+            } catch (Exception ex) {
+                logger.error("Error forwarding to index.jsp", ex);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                        "Error loading page: " + e.getMessage());
+            }
         }
     }
 }
