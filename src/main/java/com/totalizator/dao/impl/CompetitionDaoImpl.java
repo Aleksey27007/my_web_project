@@ -1,0 +1,268 @@
+package com.totalizator.dao.impl;
+
+import com.totalizator.dao.CompetitionDao;
+import com.totalizator.model.Competition;
+import com.totalizator.util.ConnectionPool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementation of CompetitionDao using JDBC with PreparedStatement for SQL injection protection.
+ * Uses try-with-resources for automatic resource management.
+ * 
+ * @author Totalizator Team
+ * @version 1.0
+ */
+public class CompetitionDaoImpl implements CompetitionDao {
+    private static final Logger logger = LogManager.getLogger();
+    private final ConnectionPool connectionPool;
+
+    private static final String FIND_BY_ID = "SELECT id, title, description, sport_type, start_date, " +
+            "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
+            "FROM competitions WHERE id = ?";
+    
+    private static final String FIND_ALL = "SELECT id, title, description, sport_type, start_date, " +
+            "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
+            "FROM competitions ORDER BY start_date DESC";
+    
+    private static final String FIND_BY_STATUS = "SELECT id, title, description, sport_type, start_date, " +
+            "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
+            "FROM competitions WHERE status = ? ORDER BY start_date DESC";
+    
+    private static final String INSERT = "INSERT INTO competitions (title, description, sport_type, " +
+            "start_date, end_date, status, result, team1, team2, score1, score2) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    private static final String UPDATE = "UPDATE competitions SET title = ?, description = ?, " +
+            "sport_type = ?, start_date = ?, end_date = ?, status = ?, result = ?, " +
+            "team1 = ?, team2 = ?, score1 = ?, score2 = ? WHERE id = ?";
+    
+    private static final String DELETE = "DELETE FROM competitions WHERE id = ?";
+
+    /**
+     * Constructor.
+     * 
+     * @param connectionPool connection pool instance
+     */
+    public CompetitionDaoImpl(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+    }
+
+    @Override
+    public Optional<Competition> findById(Integer id) {
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapResultSetToCompetition(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding competition by id: {}", id, e);
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Competition> findAll() {
+        List<Competition> competitions = new ArrayList<>();
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                competitions.add(mapResultSetToCompetition(resultSet));
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding all competitions", e);
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+        return competitions;
+    }
+
+    @Override
+    public List<Competition> findByStatus(String status) {
+        List<Competition> competitions = new ArrayList<>();
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(FIND_BY_STATUS)) {
+            statement.setString(1, status);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    competitions.add(mapResultSetToCompetition(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding competitions by status: {}", status, e);
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+        return competitions;
+    }
+
+    @Override
+    public Competition save(Competition competition) {
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
+            changeCompetitionToStatement(competition, statement);
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating competition failed, no rows affected.");
+            }
+            
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    competition.setId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating competition failed, no ID obtained.");
+                }
+            }
+            
+            logger.info("Competition saved with id: {}", competition.getId());
+            return competition;
+        } catch (SQLException e) {
+            logger.error("Error saving competition", e);
+            throw new RuntimeException("Error saving competition", e);
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public boolean update(Competition competition) {
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE)) {
+            changeCompetitionToStatement(competition, statement);
+
+            statement.setInt(12, competition.getId());
+            
+            int affectedRows = statement.executeUpdate();
+            logger.info("Competition updated: {} rows affected", affectedRows);
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            logger.error("Error updating competition", e);
+            return false;
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+    }
+
+    private void changeCompetitionToStatement(Competition competition, PreparedStatement statement) throws SQLException {
+        statement.setString(1, competition.getTitle());
+        statement.setString(2, competition.getDescription());
+        statement.setString(3, competition.getSportType());
+        statement.setTimestamp(4, Timestamp.valueOf(competition.getStartDate()));
+
+        if (competition.getEndDate() != null) {
+            statement.setTimestamp(5, Timestamp.valueOf(competition.getEndDate()));
+        } else {
+            statement.setNull(5, java.sql.Types.TIMESTAMP);
+        }
+
+        statement.setString(6, competition.getStatus().name());
+        statement.setString(7, competition.getResult());
+        statement.setString(8, competition.getTeam1());
+        statement.setString(9, competition.getTeam2());
+
+        if (competition.getScore1() != null) {
+            statement.setInt(10, competition.getScore1());
+        } else {
+            statement.setNull(10, java.sql.Types.INTEGER);
+        }
+
+        if (competition.getScore2() != null) {
+            statement.setInt(11, competition.getScore2());
+        } else {
+            statement.setNull(11, java.sql.Types.INTEGER);
+        }
+    }
+
+    @Override
+    public boolean deleteById(Integer id) {
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(DELETE)) {
+            statement.setInt(1, id);
+            int affectedRows = statement.executeUpdate();
+            logger.info("Competition deleted: {} rows affected", affectedRows);
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            logger.error("Error deleting competition", e);
+            return false;
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+    }
+
+    /**
+     * Maps ResultSet row to Competition object.
+     * 
+     * @param resultSet ResultSet containing competition data
+     * @return Competition object
+     * @throws SQLException if mapping fails
+     */
+    private Competition mapResultSetToCompetition(ResultSet resultSet) throws SQLException {
+        Competition competition = new Competition();
+        competition.setId(resultSet.getInt("id"));
+        competition.setTitle(resultSet.getString("title"));
+        competition.setDescription(resultSet.getString("description"));
+        competition.setSportType(resultSet.getString("sport_type"));
+        
+        Timestamp startDate = resultSet.getTimestamp("start_date");
+        if (startDate != null) {
+            competition.setStartDate(startDate.toLocalDateTime());
+        }
+        
+        Timestamp endDate = resultSet.getTimestamp("end_date");
+        if (endDate != null) {
+            competition.setEndDate(endDate.toLocalDateTime());
+        }
+        
+        String statusStr = resultSet.getString("status");
+        if (statusStr != null) {
+            try {
+                competition.setStatus(Competition.CompetitionStatus.valueOf(statusStr));
+            } catch (IllegalArgumentException e) {
+                competition.setStatus(Competition.CompetitionStatus.SCHEDULED);
+            }
+        }
+        
+        competition.setResult(resultSet.getString("result"));
+        competition.setTeam1(resultSet.getString("team1"));
+        competition.setTeam2(resultSet.getString("team2"));
+        
+        int score1 = resultSet.getInt("score1");
+        if (!resultSet.wasNull()) {
+            competition.setScore1(score1);
+        }
+        
+        int score2 = resultSet.getInt("score2");
+        if (!resultSet.wasNull()) {
+            competition.setScore2(score2);
+        }
+        
+        Timestamp createdAt = resultSet.getTimestamp("created_at");
+        if (createdAt != null) {
+            competition.setCreatedAt(createdAt.toLocalDateTime());
+        }
+        
+        Timestamp updatedAt = resultSet.getTimestamp("updated_at");
+        if (updatedAt != null) {
+            competition.setUpdatedAt(updatedAt.toLocalDateTime());
+        }
+        
+        return competition;
+    }
+}

@@ -1,0 +1,33 @@
+2025-12-26 02:52:55.876 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 02:52:55.889 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 02:52:56.156 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 02:58:18.090 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 02:58:18.098 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 02:58:18.350 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 02:59:49.131 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 02:59:49.138 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 02:59:49.410 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:07:24.983 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:07:24.991 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:07:25.299 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:13:36.751 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:13:36.759 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:13:37.070 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:22:25.767 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:22:25.773 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:22:26.024 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:26:58.028 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:26:58.035 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:26:58.283 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:46:27.572 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:46:27.579 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:46:27.813 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:49:15.602 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:49:15.614 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:49:15.923 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 03:50:36.857 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 03:50:36.864 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 03:50:37.100 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
+2025-12-26 04:17:37.965 [main] INFO  com.totalizator.util.ConnectionPool - Properties created
+2025-12-26 04:17:37.973 [main] INFO  com.totalizator.util.ConnectionPool - Try load input properties from classpath
+2025-12-26 04:17:38.293 [main] INFO  com.totalizator.util.ConnectionPool - Connection pool initialized with 8 connections
