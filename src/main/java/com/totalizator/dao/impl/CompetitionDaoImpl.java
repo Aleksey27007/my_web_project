@@ -79,17 +79,38 @@ public class CompetitionDaoImpl implements CompetitionDao {
     @Override
     public List<Competition> findAll() {
         List<Competition> competitions = new ArrayList<>();
-        Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
-             ResultSet resultSet = statement.executeQuery()) {
-            while (resultSet.next()) {
-                competitions.add(mapResultSetToCompetition(resultSet));
+        Connection connection = null;
+        try {
+            connection = connectionPool.getConnection();
+            if (connection == null) {
+                logger.error("Failed to get database connection");
+                return competitions;
+            }
+            
+            try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
+                 ResultSet resultSet = statement.executeQuery()) {
+                logger.info("Executing query: {}", FIND_ALL);
+                int count = 0;
+                while (resultSet.next()) {
+                    try {
+                        competitions.add(mapResultSetToCompetition(resultSet));
+                        count++;
+                    } catch (Exception e) {
+                        logger.error("Error mapping competition from ResultSet", e);
+                    }
+                }
+                logger.info("Found {} competitions in database", count);
             }
         } catch (SQLException e) {
             logger.error("Error finding all competitions", e);
+        } catch (Exception e) {
+            logger.error("Unexpected error in findAll()", e);
         } finally {
-            connectionPool.releaseConnection(connection);
+            if (connection != null) {
+                connectionPool.releaseConnection(connection);
+            }
         }
+        logger.info("Returning {} competitions", competitions.size());
         return competitions;
     }
 
@@ -162,7 +183,11 @@ public class CompetitionDaoImpl implements CompetitionDao {
 
     private void changeCompetitionToStatement(Competition competition, PreparedStatement statement) throws SQLException {
         statement.setString(1, competition.getTitle());
-        statement.setString(2, competition.getDescription());
+        if (competition.getDescription() != null) {
+            statement.setString(2, competition.getDescription());
+        } else {
+            statement.setNull(2, java.sql.Types.VARCHAR);
+        }
         statement.setString(3, competition.getSportType());
         statement.setTimestamp(4, Timestamp.valueOf(competition.getStartDate()));
 
@@ -172,8 +197,12 @@ public class CompetitionDaoImpl implements CompetitionDao {
             statement.setNull(5, java.sql.Types.TIMESTAMP);
         }
 
-        statement.setString(6, competition.getStatus().name());
-        statement.setString(7, competition.getResult());
+        statement.setString(6, competition.getStatus() != null ? competition.getStatus().name() : "SCHEDULED");
+        if (competition.getResult() != null) {
+            statement.setString(7, competition.getResult());
+        } else {
+            statement.setNull(7, java.sql.Types.VARCHAR);
+        }
         statement.setString(8, competition.getTeam1());
         statement.setString(9, competition.getTeam2());
 
