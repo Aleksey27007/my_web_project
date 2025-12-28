@@ -17,6 +17,14 @@
         th, td { padding: 10px; border: 1px solid #ddd; }
         th { background-color: #4CAF50; color: white; }
         .btn { padding: 8px 16px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
+        .btn-danger { background-color: #f44336; }
+        .form-container { margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 4px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .error { color: #f44336; margin-bottom: 15px; padding: 10px; background-color: #ffebee; border-radius: 4px; }
+        .success { color: #4CAF50; margin-bottom: 15px; padding: 10px; background-color: #e8f5e9; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -25,6 +33,46 @@
         <a href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout" /></a>
     </nav>
     <h1><fmt:message key="admin.competitions" /></h1>
+    
+    <c:if test="${requestScope.error != null}">
+        <div class="error">${requestScope.error}</div>
+    </c:if>
+    <c:if test="${requestScope.success != null}">
+        <div class="success">${requestScope.success}</div>
+    </c:if>
+    
+    <div class="form-container">
+        <h2><fmt:message key="admin.create.competition" /></h2>
+        <form action="${pageContext.request.contextPath}/admin/competition/create" method="post">
+            <div class="form-group">
+                <label for="title"><fmt:message key="competition.title" /> *</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="sportType">Sport Type *</label>
+                <input type="text" id="sportType" name="sportType" required placeholder="e.g., Football, Basketball">
+            </div>
+            <div class="form-group">
+                <label for="team1"><fmt:message key="competition.team1" /> *</label>
+                <input type="text" id="team1" name="team1" required>
+            </div>
+            <div class="form-group">
+                <label for="team2"><fmt:message key="competition.team2" /> *</label>
+                <input type="text" id="team2" name="team2" required>
+            </div>
+            <div class="form-group">
+                <label for="startDate"><fmt:message key="competition.startDate" /> *</label>
+                <input type="datetime-local" id="startDate" name="startDate" required>
+            </div>
+            <button type="submit" class="btn"><fmt:message key="admin.create.competition" /></button>
+        </form>
+    </div>
+    
+    <h2>Existing Competitions</h2>
     <table>
         <thead>
             <tr>

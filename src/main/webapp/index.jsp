@@ -133,13 +133,22 @@
                                 <td>${competition.title}</td>
                                 <td>${competition.team1}</td>
                                 <td>${competition.team2}</td>
-                                <td><fmt:formatDate value="${competition.startDate}" pattern="yyyy-MM-dd HH:mm" /></td>
-                                <td>${competition.status}</td>
-                                <c:if test="${sessionScope.user != null && competition.status.name() == 'SCHEDULED'}">
+                                <td>${competition.startDate}</td>
+                                <td>
+                                    <c:if test="${competition.status != null}">
+                                        <fmt:message key="status.${competition.status.name()}" />
+                                    </c:if>
+                                    <c:if test="${competition.status == null}">
+                                        N/A
+                                    </c:if>
+                                </td>
+                                <c:if test="${sessionScope.user != null}">
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/bets/create/${competition.id}" class="btn">
-                                            <fmt:message key="competition.bet" />
-                                        </a>
+                                        <c:if test="${competition.status != null && competition.status.name() == 'SCHEDULED'}">
+                                            <a href="${pageContext.request.contextPath}/bets/create/${competition.id}" class="btn">
+                                                <fmt:message key="competition.bet" />
+                                            </a>
+                                        </c:if>
                                     </td>
                                 </c:if>
                             </tr>
