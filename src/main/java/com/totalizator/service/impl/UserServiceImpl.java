@@ -105,12 +105,14 @@ public class UserServiceImpl implements UserService {
         
         Optional<User> userOptional = userDao.findByUsername(username);
         if (userOptional.isPresent()) {
+            logger.info("Optional object has user: {}", username);
             User user = userOptional.get();
             String hashedPassword = hashPassword(password);
             if (hashedPassword.equals(user.getPassword()) && user.isActive()) {
                 logger.info("User authenticated: {}", username);
                 return Optional.of(user);
             }
+            logger.info("Optional cant return user: {}", username);
         }
         
         logger.warn("Authentication failed for username: {}", username);
