@@ -72,6 +72,19 @@ CREATE TABLE IF NOT EXISTS bets (
     FOREIGN KEY (bet_type_id) REFERENCES bet_types(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table: competition_bet_types (for bookmaker to set multipliers per competition)
+CREATE TABLE IF NOT EXISTS competition_bet_types (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    competition_id INT NOT NULL,
+    bet_type_id INT NOT NULL,
+    multiplier DECIMAL(5, 2) NOT NULL DEFAULT 1.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (competition_id) REFERENCES competitions(id) ON DELETE CASCADE,
+    FOREIGN KEY (bet_type_id) REFERENCES bet_types(id) ON DELETE RESTRICT,
+    UNIQUE KEY unique_competition_bet_type (competition_id, bet_type_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert initial data
 INSERT INTO roles (name, description) VALUES
 ('ADMIN', 'Администратор системы'),
