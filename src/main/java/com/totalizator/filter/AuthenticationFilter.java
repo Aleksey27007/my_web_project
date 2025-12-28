@@ -48,7 +48,12 @@ public class AuthenticationFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        HttpSession session = httpRequest.getSession(false);
+        HttpSession session = httpRequest.getSession(true);
+        
+        // Set default locale to English if not set
+        if (session.getAttribute("locale") == null) {
+            session.setAttribute("locale", java.util.Locale.ENGLISH);
+        }
         
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
@@ -76,6 +81,12 @@ public class AuthenticationFilter implements Filter {
         // Check role-based access
         if (path.startsWith("/admin") && !user.getRole().getName().equals("ADMIN")) {
             logger.warn("Unauthorized access attempt to admin area by user: {}", user.getUsername());
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        
+        if (path.startsWith("/bookmaker") && !user.getRole().getName().equals("BOOKMAKER")) {
+            logger.warn("Unauthorized access attempt to bookmaker area by user: {}", user.getUsername());
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
