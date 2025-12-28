@@ -17,6 +17,13 @@
         th, td { padding: 10px; border: 1px solid #ddd; }
         th { background-color: #4CAF50; color: white; }
         .btn { padding: 8px 16px; background-color: #f44336; color: white; text-decoration: none; border-radius: 4px; }
+        .btn-success { background-color: #4CAF50; }
+        .form-container { margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 4px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .error { color: #f44336; margin-bottom: 15px; padding: 10px; background-color: #ffebee; border-radius: 4px; }
+        .success { color: #4CAF50; margin-bottom: 15px; padding: 10px; background-color: #e8f5e9; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -25,11 +32,50 @@
         <a href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout" /></a>
     </nav>
     <h1><fmt:message key="admin.users" /></h1>
+    
     <c:if test="${requestScope.error != null}">
-        <div style="color: #f44336; margin-bottom: 15px; padding: 10px; background-color: #ffebee; border-radius: 4px;">
-            ${requestScope.error}
-        </div>
+        <div class="error">${requestScope.error}</div>
     </c:if>
+    <c:if test="${requestScope.success != null}">
+        <div class="success">${requestScope.success}</div>
+    </c:if>
+    
+    <div class="form-container">
+        <h2>Create New User</h2>
+        <form action="${pageContext.request.contextPath}/admin/user/create" method="post">
+            <div class="form-group">
+                <label for="username">Username *</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="firstName">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" name="lastName">
+            </div>
+            <div class="form-group">
+                <label for="role">Role *</label>
+                <select id="role" name="role" required>
+                    <option value="CLIENT">CLIENT</option>
+                    <option value="BOOKMAKER">BOOKMAKER</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Create User</button>
+        </form>
+    </div>
+    
+    <h2>Existing Users</h2>
     <table>
         <thead>
             <tr>
