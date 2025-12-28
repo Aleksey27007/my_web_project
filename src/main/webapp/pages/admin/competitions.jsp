@@ -91,6 +91,9 @@
                     <td>${competition.team2}</td>
                     <td>${competition.status}</td>
                     <td>
+                        <a href="${pageContext.request.contextPath}/admin/competition/edit/${competition.id}" class="btn" style="background-color: #2196F3; margin-right: 5px;">
+                            <fmt:message key="common.edit" />
+                        </a>
                         <c:if test="${competition.status.name() == 'SCHEDULED'}">
                             <a href="${pageContext.request.contextPath}/admin/competition/generate/${competition.id}" class="btn">
                                 <fmt:message key="admin.generate.result" />
