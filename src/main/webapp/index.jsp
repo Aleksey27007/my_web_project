@@ -98,6 +98,9 @@
                     <c:if test="${sessionScope.user.role.name == 'ADMIN'}">
                         <a href="${pageContext.request.contextPath}/admin/"><fmt:message key="nav.admin" /></a>
                     </c:if>
+                    <c:if test="${sessionScope.user.role.name == 'BOOKMAKER'}">
+                        <a href="${pageContext.request.contextPath}/bookmaker/">Bookmaker</a>
+                    </c:if>
                     <a href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout" /></a>
                 </c:otherwise>
             </c:choose>
@@ -112,8 +115,13 @@
         
         <h2><fmt:message key="home.competitions" /></h2>
         
+        <c:if test="${competitions == null}">
+            <p style="color: orange;">Loading competitions...</p>
+        </c:if>
+        
         <c:choose>
             <c:when test="${competitions != null && !empty competitions}">
+                <p style="color: green; margin-bottom: 10px;">Found ${competitions.size()} competition(s)</p>
                 <table>
                     <thead>
                         <tr>
@@ -156,8 +164,12 @@
                     </tbody>
                 </table>
             </c:when>
+            <c:when test="${competitions != null && empty competitions}">
+                <p style="color: orange;"><fmt:message key="home.no.competitions" /></p>
+                <p style="color: #666; font-size: 0.9em;">There are no competitions available at the moment. Please check back later.</p>
+            </c:when>
             <c:otherwise>
-                <p><fmt:message key="home.no.competitions" /></p>
+                <p style="color: red;">Error loading competitions. Please try again later.</p>
             </c:otherwise>
         </c:choose>
     </div>
