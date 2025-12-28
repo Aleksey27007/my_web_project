@@ -25,6 +25,11 @@
         <a href="${pageContext.request.contextPath}/logout"><fmt:message key="nav.logout" /></a>
     </nav>
     <h1><fmt:message key="admin.users" /></h1>
+    <c:if test="${requestScope.error != null}">
+        <div style="color: #f44336; margin-bottom: 15px; padding: 10px; background-color: #ffebee; border-radius: 4px;">
+            ${requestScope.error}
+        </div>
+    </c:if>
     <table>
         <thead>
             <tr>
