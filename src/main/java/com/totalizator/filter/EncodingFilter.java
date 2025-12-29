@@ -11,12 +11,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import java.io.IOException;
 
-/**
- * Filter for setting UTF-8 encoding for requests and responses.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class EncodingFilter implements Filter {
     private static final Logger logger = LogManager.getLogger();
     private static final String ENCODING = "UTF-8";

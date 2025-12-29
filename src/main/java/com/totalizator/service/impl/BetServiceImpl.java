@@ -18,12 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of BetService.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class BetServiceImpl implements BetService {
     private static final Logger logger = LogManager.getLogger();
     private final BetDao betDao;
@@ -31,9 +26,7 @@ public class BetServiceImpl implements BetService {
     private final CompetitionService competitionService;
     private final Dao<BetType, Integer> betTypeDao;
 
-    /**
-     * Constructor.
-     */
+    
     public BetServiceImpl() {
         this.betDao = DaoFactory.getInstance().getBetDao();
         this.userService = new UserServiceImpl();
@@ -43,7 +36,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public Optional<Bet> findById(Integer id) {
-        if (id == null || id <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
             return Optional.empty();
         }
         return betDao.findById(id);
@@ -56,7 +49,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public List<Bet> findByUserId(Integer userId) {
-        if (userId == null || userId <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(userId)) {
             return Arrays.asList();
         }
         return betDao.findByUserId(userId);
@@ -64,7 +57,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public List<Bet> findByCompetitionId(Integer competitionId) {
-        if (competitionId == null || competitionId <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(competitionId)) {
             return Arrays.asList();
         }
         return betDao.findByCompetitionId(competitionId);
@@ -73,8 +66,7 @@ public class BetServiceImpl implements BetService {
     @Override
     public Bet placeBet(Bet bet) {
         validateBet(bet);
-        
-        // Check user balance
+
         User user = bet.getUser();
         Optional<User> userOptional = userService.findById(user.getId());
         if (!userOptional.isPresent()) {
@@ -85,8 +77,7 @@ public class BetServiceImpl implements BetService {
         if (actualUser.getBalance().compareTo(bet.getAmount()) < 0) {
             throw new IllegalArgumentException("Insufficient balance");
         }
-        
-        // Check competition exists and is scheduled
+
         Optional<Competition> competitionOptional = competitionService.findById(bet.getCompetition().getId());
         if (competitionOptional.isEmpty()) {
             throw new IllegalArgumentException("Competition not found");
@@ -96,13 +87,11 @@ public class BetServiceImpl implements BetService {
         if (competition.getStatus() != Competition.CompetitionStatus.SCHEDULED) {
             throw new IllegalArgumentException("Competition is not available for betting");
         }
-        
-        // Deduct bet amount from user balance
+
         BigDecimal newBalance = actualUser.getBalance().subtract(bet.getAmount());
         actualUser.setBalance(newBalance);
         userService.updateUser(actualUser);
-        
-        // Set bet status
+
         bet.setStatus(Bet.BetStatus.PENDING);
         bet.setUser(actualUser);
         
@@ -123,21 +112,18 @@ public class BetServiceImpl implements BetService {
             logger.warn("Cannot cancel bet {} with status {}", betId, bet.getStatus());
             return false;
         }
-        
-        // Check if competition is still scheduled
+
         Competition competition = bet.getCompetition();
         if (competition.getStatus() != Competition.CompetitionStatus.SCHEDULED) {
             logger.warn("Cannot cancel bet {} - competition already started/finished", betId);
             return false;
         }
-        
-        // Return money to user
+
         User user = bet.getUser();
         BigDecimal newBalance = user.getBalance().add(bet.getAmount());
         user.setBalance(newBalance);
         userService.updateUser(user);
-        
-        // Update bet status
+
         bet.setStatus(Bet.BetStatus.CANCELLED);
         boolean updated = betDao.update(bet);
         
@@ -169,11 +155,10 @@ public class BetServiceImpl implements BetService {
                 bet.setStatus(won ? Bet.BetStatus.WON : Bet.BetStatus.LOST);
                 
                 if (won) {
-                    // Calculate win amount
+
                     BigDecimal winAmount = bet.getAmount().multiply(bet.getBetType().getMultiplier());
                     bet.setWinAmount(winAmount);
-                    
-                    // Add winnings to user balance
+
                     User user = bet.getUser();
                     BigDecimal newBalance = user.getBalance().add(winAmount);
                     user.setBalance(newBalance);
@@ -191,13 +176,7 @@ public class BetServiceImpl implements BetService {
         return processedCount;
     }
 
-    /**
-     * Checks if a bet won based on competition result.
-     * 
-     * @param bet bet to check
-     * @param competition competition with result
-     * @return true if bet won
-     */
+    
     private boolean checkBetWin(Bet bet, Competition competition) {
         String betTypeName = bet.getBetType().getName();
         String predictedValue = bet.getPredictedValue();
@@ -226,12 +205,7 @@ public class BetServiceImpl implements BetService {
         }
     }
 
-    /**
-     * Validates bet data.
-     * 
-     * @param bet bet to validate
-     * @throws IllegalArgumentException if validation fails
-     */
+    
     private void validateBet(Bet bet) {
         if (bet == null) {
             throw new IllegalArgumentException("Bet cannot be null");

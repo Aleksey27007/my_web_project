@@ -3,7 +3,7 @@ package com.totalizator.controller.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.totalizator.model.Competition;
 import com.totalizator.service.CompetitionService;
-import com.totalizator.service.impl.CompetitionServiceImpl;
+import com.totalizator.service.factory.ServiceFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,13 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * REST API controller for competition operations.
- * Web Service implementation.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "competitionApiController", urlPatterns = "/api/competitions/*")
 public class CompetitionApiController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
@@ -29,7 +23,7 @@ public class CompetitionApiController extends HttpServlet {
     private final ObjectMapper objectMapper;
 
     public CompetitionApiController() {
-        this.competitionService = new CompetitionServiceImpl();
+        this.competitionService = ServiceFactory.getInstance().getCompetitionService();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -43,16 +37,16 @@ public class CompetitionApiController extends HttpServlet {
         
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // Get all competitions
+
                 List<Competition> competitions = competitionService.findAll();
                 objectMapper.writeValue(response.getWriter(), competitions);
             } else if (pathInfo.startsWith("/status/")) {
-                // Get competitions by status
+
                 String status = pathInfo.substring("/status/".length());
                 List<Competition> competitions = competitionService.findByStatus(status);
                 objectMapper.writeValue(response.getWriter(), competitions);
             } else {
-                // Get competition by id
+
                 String competitionIdStr = pathInfo.substring(1);
                 int competitionId = Integer.parseInt(competitionIdStr);
                 competitionService.findById(competitionId).ifPresent(competition -> {

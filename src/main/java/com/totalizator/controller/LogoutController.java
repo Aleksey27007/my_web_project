@@ -11,12 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * Controller for logout functionality.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "logoutController", urlPatterns = "/logout")
 public class LogoutController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();

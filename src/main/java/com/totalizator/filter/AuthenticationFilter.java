@@ -15,13 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * Filter for authentication and authorization.
- * Checks if user is logged in and has required role.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class AuthenticationFilter implements Filter {
     private static final Logger logger = LogManager.getLogger();
     
@@ -35,7 +29,7 @@ public class AuthenticationFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         try {
             logger.info("AuthenticationFilter initializing...");
-            // Filter initialization logic here if needed
+
             logger.info("AuthenticationFilter initialized successfully");
         } catch (Exception e) {
             logger.error("Failed to initialize AuthenticationFilter", e);
@@ -49,8 +43,7 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(true);
-        
-        // Set default locale to English if not set
+
         if (session.getAttribute("locale") == null) {
             session.setAttribute("locale", java.util.Locale.ENGLISH);
         }
@@ -58,8 +51,7 @@ public class AuthenticationFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
-        
-        // Allow access to login and register pages, index.jsp, pages, and static resources
+
         if (path.equals(LOGIN_PAGE) || path.equals(LOGIN_ACTION) || path.equals(REGISTER_ACTION) 
                 || path.equals("/") || path.equals("/index.jsp") || path.startsWith(STATIC_RESOURCES) 
                 || path.startsWith("/api/") || path.startsWith("/locale") || path.startsWith("/pages/")
@@ -68,8 +60,7 @@ public class AuthenticationFilter implements Filter {
             chain.doFilter(request, response);
             return;
         }
-        
-        // Check if user is logged in
+
         if (session == null || session.getAttribute(USER_ATTRIBUTE) == null) {
             logger.debug("Unauthenticated access attempt to: {}", path);
             httpResponse.sendRedirect(contextPath + LOGIN_PAGE);
@@ -77,8 +68,7 @@ public class AuthenticationFilter implements Filter {
         }
         
         User user = (User) session.getAttribute(USER_ATTRIBUTE);
-        
-        // Check role-based access
+
         if (path.startsWith("/admin") && !user.getRole().getName().equals("ADMIN")) {
             logger.warn("Unauthorized access attempt to admin area by user: {}", user.getUsername());
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN);

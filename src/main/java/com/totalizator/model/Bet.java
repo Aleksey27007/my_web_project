@@ -3,12 +3,7 @@ package com.totalizator.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Entity class representing a bet made by a user.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class Bet {
     private int id;
     private User user;
@@ -21,29 +16,16 @@ public class Bet {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    /**
-     * Enumeration for bet status.
-     */
+    
     public enum BetStatus {
         PENDING, WON, LOST, CANCELLED
     }
 
-    /**
-     * Default constructor.
-     */
+    
     public Bet() {
     }
 
-    /**
-     * Constructor with parameters.
-     * 
-     * @param id            bet identifier
-     * @param user          user who made the bet
-     * @param competition   competition the bet is on
-     * @param betType       type of bet
-     * @param amount        bet amount
-     * @param predictedValue predicted outcome
-     */
+    
     public Bet(int id, User user, Competition competition, BetType betType, 
                BigDecimal amount, String predictedValue) {
         this.id = id;

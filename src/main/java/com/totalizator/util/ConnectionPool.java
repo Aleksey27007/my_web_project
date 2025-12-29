@@ -17,13 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Thread-safe connection pool implementation using BlockingQueue.
- * Does not use synchronized or volatile keywords as per requirements.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class ConnectionPool {
     private static final Logger logger = LogManager.getLogger(ConnectionPool.class);
     private static final ReentrantLock instanceLock = new ReentrantLock();
@@ -42,16 +36,14 @@ public class ConnectionPool {
         }
     }
 
-    /**
-     * Private constructor for Singleton pattern.
-     */
+    
     private ConnectionPool() {
         Properties properties = new Properties();
         logger.info("Properties created");
 
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
             if (input == null) {
-                // Fallback to file system path
+
                 Path pathProperties = Paths.get(PROPERTIES_PATH);
                 try (InputStream fileInput = new FileInputStream(pathProperties.toFile())) {
                     logger.info("Try load input properties from file system");
@@ -94,11 +86,7 @@ public class ConnectionPool {
         }
     }
 
-    /**
-     * Returns the singleton instance of ConnectionPool.
-     * 
-     * @return ConnectionPool instance
-     */
+    
     public static ConnectionPool getInstance() {
         if (instance == null) {
             instanceLock.lock();
@@ -113,11 +101,7 @@ public class ConnectionPool {
         return instance;
     }
 
-    /**
-     * Gets a connection from the pool.
-     * 
-     * @return Connection object
-     */
+    
     public Connection getConnection() {
         Connection connection;
         try {
@@ -130,11 +114,7 @@ public class ConnectionPool {
         return connection;
     }
 
-    /**
-     * Releases a connection back to the pool.
-     * 
-     * @param connection connection to release
-     */
+    
     public void releaseConnection(Connection connection) {
         if (connection == null) {
             return;

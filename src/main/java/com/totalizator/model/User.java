@@ -3,12 +3,7 @@ package com.totalizator.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Entity class representing a user in the totalizator system.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class User {
     private int id;
     private String username;
@@ -22,24 +17,9 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    /**
-     * Default constructor.
-     */
     public User() {
     }
 
-    /**
-     * Constructor with parameters.
-     * 
-     * @param id        user identifier
-     * @param username  username
-     * @param email     email address
-     * @param password  password hash
-     * @param firstName first name
-     * @param lastName  last name
-     * @param role      user role
-     * @param balance   account balance
-     */
     public User(int id, String username, String email, String password, 
                 String firstName, String lastName, Role role, BigDecimal balance) {
         this.id = id;

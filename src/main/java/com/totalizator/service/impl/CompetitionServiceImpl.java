@@ -13,27 +13,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-/**
- * Implementation of CompetitionService.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class CompetitionServiceImpl implements CompetitionService {
     private static final Logger logger = LogManager.getLogger();
     private final CompetitionDao competitionDao;
     private final Random random = new Random();
 
-    /**
-     * Constructor.
-     */
+    
     public CompetitionServiceImpl() {
         this.competitionDao = DaoFactory.getInstance().getCompetitionDao();
     }
 
     @Override
     public Optional<Competition> findById(Integer id) {
-        if (id == null || id <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
             return Optional.empty();
         }
         return competitionDao.findById(id);
@@ -70,7 +63,7 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public boolean deleteCompetition(Integer id) {
-        if (id == null || id <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
             return false;
         }
         logger.info("Deleting competition with id: {}", id);
@@ -86,8 +79,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         }
         
         Competition competition = competitionOptional.get();
-        
-        // Generate random scores
+
         int score1 = random.nextInt(6); // 0-5 goals
         int score2 = random.nextInt(6);
         
@@ -95,8 +87,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         competition.setScore2(score2);
         competition.setStatus(Competition.CompetitionStatus.FINISHED);
         competition.setEndDate(LocalDateTime.now());
-        
-        // Determine result
+
         if (score1 > score2) {
             competition.setResult("WIN_TEAM1");
         } else if (score2 > score1) {
@@ -110,12 +101,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         return competitionDao.update(competition);
     }
 
-    /**
-     * Validates competition data.
-     * 
-     * @param competition competition to validate
-     * @throws IllegalArgumentException if validation fails
-     */
+    
     private void validateCompetition(Competition competition) {
         if (competition == null) {
             throw new IllegalArgumentException("Competition cannot be null");

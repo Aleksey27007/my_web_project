@@ -15,17 +15,10 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-/**
- * Filter for XSS (Cross-Site Scripting) protection.
- * Sanitizes request parameters to prevent XSS attacks.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class XSSFilter implements Filter {
     private static final Logger logger = LogManager.getLogger();
-    
-    // Pattern for detecting potentially dangerous script tags and events
+
     private static final Pattern[] XSS_PATTERNS = {
         Pattern.compile("<script>(.*?)</script>", Pattern.CASE_INSENSITIVE),
         Pattern.compile("src[\r\n]*=[\r\n]*['\"]?(.*?)['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL),
@@ -61,9 +54,7 @@ public class XSSFilter implements Filter {
         logger.info("XSSFilter destroyed");
     }
 
-    /**
-     * Request wrapper that sanitizes parameter values.
-     */
+    
     private static class XSSRequestWrapper extends HttpServletRequestWrapper {
         public XSSRequestWrapper(HttpServletRequest request) {
             super(request);
@@ -95,12 +86,7 @@ public class XSSFilter implements Filter {
             return stripXSS(value);
         }
 
-        /**
-         * Strips XSS patterns from input string.
-         * 
-         * @param value input string
-         * @return sanitized string
-         */
+        
         private String stripXSS(String value) {
             if (StringUtils.isBlank(value)) {
                 return value;
@@ -110,8 +96,7 @@ public class XSSFilter implements Filter {
             for (Pattern pattern : XSS_PATTERNS) {
                 sanitized = pattern.matcher(sanitized).replaceAll("");
             }
-            
-            // Additional HTML entity encoding for common dangerous characters
+
             sanitized = sanitized.replace("<", "&lt;")
                                 .replace(">", "&gt;")
                                 .replace("\"", "&quot;")

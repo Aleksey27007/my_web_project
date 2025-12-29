@@ -21,13 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of BetDao using JDBC with PreparedStatement for SQL injection protection.
- * Uses try-with-resources for automatic resource management.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class BetDaoImpl implements BetDao {
     private static final Logger logger = LogManager.getLogger();
     private final ConnectionPool connectionPool;
@@ -62,13 +56,7 @@ public class BetDaoImpl implements BetDao {
     
     private static final String DELETE = "DELETE FROM bets WHERE id = ?";
 
-    /**
-     * Constructor.
-     * 
-     * @param connectionPool connection pool instance
-     * @param userDao user DAO instance
-     * @param competitionDao competition DAO instance
-     */
+    
     public BetDaoImpl(ConnectionPool connectionPool, UserDao userDao, CompetitionDao competitionDao) {
         this.connectionPool = connectionPool;
         this.userDao = userDao;
@@ -227,13 +215,7 @@ public class BetDaoImpl implements BetDao {
         }
     }
 
-    /**
-     * Maps ResultSet row to Bet object.
-     * 
-     * @param resultSet ResultSet containing bet data
-     * @return Bet object
-     * @throws SQLException if mapping fails
-     */
+    
     private Bet mapResultSetToBet(ResultSet resultSet) throws SQLException {
         Bet bet = new Bet();
         bet.setId(resultSet.getInt("id"));
@@ -263,8 +245,7 @@ public class BetDaoImpl implements BetDao {
         if (updatedAt != null) {
             bet.setUpdatedAt(updatedAt.toLocalDateTime());
         }
-        
-        // Load related entities
+
         int userId = resultSet.getInt("user_id");
         Optional<User> user = userDao.findById(userId);
         user.ifPresent(bet::setUser);
@@ -272,8 +253,7 @@ public class BetDaoImpl implements BetDao {
         int competitionId = resultSet.getInt("competition_id");
         Optional<Competition> competition = competitionDao.findById(competitionId);
         competition.ifPresent(bet::setCompetition);
-        
-        // Set BetType
+
         BetType betType = new BetType();
         betType.setId(resultSet.getInt("bet_type_id"));
         betType.setName(resultSet.getString("bet_type_name"));

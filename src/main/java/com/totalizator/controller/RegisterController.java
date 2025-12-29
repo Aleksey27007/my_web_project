@@ -3,7 +3,7 @@ package com.totalizator.controller;
 import com.totalizator.model.Role;
 import com.totalizator.model.User;
 import com.totalizator.service.UserService;
-import com.totalizator.service.impl.UserServiceImpl;
+import com.totalizator.service.factory.ServiceFactory;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,18 +13,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-/**
- * Controller for user registration.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "registerController", urlPatterns = "/register")
 public class RegisterController extends HttpServlet {
     private final UserService userService;
 
     public RegisterController() {
-        this.userService = new UserServiceImpl();
+        this.userService = ServiceFactory.getInstance().getUserService();
     }
 
     @Override
@@ -43,8 +38,7 @@ public class RegisterController extends HttpServlet {
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         
-        if (username == null || email == null || password == null || 
-            username.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
+        if (!com.totalizator.util.ValidationUtils.areAllNotEmpty(username, email, password)) {
             request.setAttribute("error", "All required fields must be filled");
             request.getRequestDispatcher("/pages/register.jsp").forward(request, response);
             return;
@@ -67,8 +61,7 @@ public class RegisterController extends HttpServlet {
             user.setRole(new Role(3, "CLIENT", "Клиент"));
             
             userService.register(user);
-            
-            // Post-Redirect-Get pattern
+
             response.sendRedirect(request.getContextPath() + "/login");
         } catch (IllegalArgumentException e) {
             request.setAttribute("error", e.getMessage());

@@ -16,26 +16,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of UserService.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger();
     private final UserDao userDao;
 
-    /**
-     * Constructor.
-     */
+    
     public UserServiceImpl() {
         this.userDao = DaoFactory.getInstance().getUserDao();
     }
 
     @Override
     public Optional<User> findById(Integer id) {
-        if (id == null || id <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
             return Optional.empty();
         }
         return userDao.findById(id);
@@ -65,32 +58,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(User user) {
         validateUser(user);
-        
-        // Check if username already exists
+
         if (userDao.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
-        
-        // Check if email already exists
+
         if (userDao.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
-        
-        // Hash password
+
         user.setPassword(hashPassword(user.getPassword()));
-        
-        // Set default role if not set (CLIENT)
+
         if (user.getRole() == null) {
             Role clientRole = new Role(3, "CLIENT", "Клиент");
             user.setRole(clientRole);
         }
-        
-        // Set default balance if not set
+
         if (user.getBalance() == null) {
             user.setBalance(BigDecimal.ZERO);
         }
-        
-        // Set user as active by default
+
         user.setActive(true);
         
         logger.info("Registering new user: {}", user.getUsername());
@@ -124,15 +111,14 @@ public class UserServiceImpl implements UserService {
         if (user == null || user.getId() <= 0) {
             return false;
         }
-        
-        // If password is being updated, hash it
+
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            // Check if password is already hashed (simple check)
+
             if (user.getPassword().length() < 60) {
                 user.setPassword(hashPassword(user.getPassword()));
             }
         } else {
-            // Keep existing password
+
             Optional<User> existingUser = userDao.findById(user.getId());
             existingUser.ifPresent(value -> user.setPassword(value.getPassword()));
         }
@@ -142,18 +128,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUser(Integer id) {
-        if (id == null || id <= 0) {
+        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
             return false;
         }
         return userDao.deleteById(id);
     }
 
-    /**
-     * Validates user data.
-     * 
-     * @param user user to validate
-     * @throws IllegalArgumentException if validation fails
-     */
+    
     private void validateUser(User user) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
@@ -178,23 +159,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /**
-     * Validates email format.
-     * 
-     * @param email email to validate
-     * @return true if email is valid
-     */
+    
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
-    /**
-     * Hashes password using SHA-256.
-     * Note: In production, use BCrypt or similar.
-     * 
-     * @param password plain text password
-     * @return hashed password
-     */
+    
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

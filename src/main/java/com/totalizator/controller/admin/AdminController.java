@@ -1,13 +1,13 @@
 package com.totalizator.controller.admin;
 
+import com.totalizator.controller.BaseController;
 import com.totalizator.controller.RoleController;
 import com.totalizator.model.Competition;
 import com.totalizator.model.Role;
 import com.totalizator.model.User;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.UserService;
-import com.totalizator.service.impl.CompetitionServiceImpl;
-import com.totalizator.service.impl.UserServiceImpl;
+import com.totalizator.service.factory.ServiceFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,19 +16,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Admin controller for managing competitions and users.
- * Implements RoleController for role-based access.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "adminController", urlPatterns = "/admin/*")
 public class AdminController extends HttpServlet implements RoleController {
     private static final Logger logger = LogManager.getLogger();
@@ -36,24 +29,21 @@ public class AdminController extends HttpServlet implements RoleController {
     private final UserService userService;
 
     public AdminController() {
-        this.competitionService = new CompetitionServiceImpl();
-        this.userService = new UserServiceImpl();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        this.competitionService = serviceFactory.getCompetitionService();
+        this.userService = serviceFactory.getUserService();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        BaseController baseController = new BaseController() {};
+        if (!baseController.requireAuthentication(request, response) 
+                || !baseController.requireRole(request, response, "ADMIN")) {
             return;
         }
         
-        User user = (User) session.getAttribute("user");
-        if (!user.getRole().getName().equals("ADMIN")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+        User user = baseController.getUserFromSession(request);
         
         String pathInfo = request.getPathInfo();
         
@@ -81,7 +71,7 @@ public class AdminController extends HttpServlet implements RoleController {
                 int competitionId = Integer.parseInt(competitionIdStr);
                 competitionService.generateRandomResult(competitionId);
                 com.totalizator.service.BetService betService = 
-                        new com.totalizator.service.impl.BetServiceImpl();
+                        ServiceFactory.getInstance().getBetService();
                 betService.processBetsForCompetition(competitionId);
                 response.sendRedirect(request.getContextPath() + "/admin/competitions");
             } catch (Exception e) {
@@ -92,8 +82,7 @@ public class AdminController extends HttpServlet implements RoleController {
             try {
                 String userIdStr = pathInfo.substring("/user/delete/".length());
                 int userId = Integer.parseInt(userIdStr);
-                
-                // Prevent admin from deleting themselves
+
                 if (userId == user.getId()) {
                     logger.warn("Admin {} attempted to delete themselves", user.getUsername());
                     request.setAttribute("error", "You cannot delete your own account");
@@ -125,17 +114,13 @@ public class AdminController extends HttpServlet implements RoleController {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        BaseController baseController = new BaseController() {};
+        if (!baseController.requireAuthentication(request, response) 
+                || !baseController.requireRole(request, response, "ADMIN")) {
             return;
         }
         
-        User user = (User) session.getAttribute("user");
-        if (!user.getRole().getName().equals("ADMIN")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+        User user = baseController.getUserFromSession(request);
         
         String pathInfo = request.getPathInfo();
         
@@ -145,11 +130,10 @@ public class AdminController extends HttpServlet implements RoleController {
                 competition.setTitle(request.getParameter("title"));
                 competition.setDescription(request.getParameter("description"));
                 competition.setSportType(request.getParameter("sportType"));
-                
-                // Parse datetime-local format (YYYY-MM-DDTHH:mm) to LocalDateTime
+
                 String startDateStr = request.getParameter("startDate");
                 if (startDateStr != null && !startDateStr.isEmpty()) {
-                    // Replace 'T' with space and add seconds if needed
+
                     startDateStr = startDateStr.replace("T", " ");
                     if (startDateStr.length() == 16) {
                         startDateStr += ":00"; // Add seconds if missing
@@ -191,8 +175,7 @@ public class AdminController extends HttpServlet implements RoleController {
                     request.getRequestDispatcher("/pages/admin/users.jsp").forward(request, response);
                     return;
                 }
-                
-                // Create role based on role name
+
                 Role role;
                 switch (roleName.toUpperCase()) {
                     case "ADMIN":

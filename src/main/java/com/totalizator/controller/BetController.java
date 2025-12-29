@@ -8,8 +8,7 @@ import com.totalizator.service.BetService;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.dao.Dao;
 import com.totalizator.service.factory.DaoFactory;
-import com.totalizator.service.impl.BetServiceImpl;
-import com.totalizator.service.impl.CompetitionServiceImpl;
+import com.totalizator.service.factory.ServiceFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,18 +17,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller for bet operations.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "betController", urlPatterns = "/bets/*")
 public class BetController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
@@ -38,21 +31,21 @@ public class BetController extends HttpServlet {
     private final Dao<BetType, Integer> betTypeDao;
 
     public BetController() {
-        this.betService = new BetServiceImpl();
-        this.competitionService = new CompetitionServiceImpl();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        this.betService = serviceFactory.getBetService();
+        this.competitionService = serviceFactory.getCompetitionService();
         this.betTypeDao = DaoFactory.getInstance().getBetTypeDao();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        BaseController baseController = new BaseController() {};
+        if (!baseController.requireAuthentication(request, response)) {
             return;
         }
         
-        User user = (User) session.getAttribute("user");
+        User user = baseController.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
         
         if (pathInfo == null || pathInfo.equals("/")) {
@@ -84,13 +77,12 @@ public class BetController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        BaseController baseController = new BaseController() {};
+        if (!baseController.requireAuthentication(request, response)) {
             return;
         }
         
-        User user = (User) session.getAttribute("user");
+        User user = baseController.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
         
         if (pathInfo != null && pathInfo.equals("/create")) {

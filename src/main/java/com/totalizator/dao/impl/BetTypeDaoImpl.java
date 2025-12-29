@@ -15,13 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of DAO for BetType entity using JDBC with PreparedStatement.
- * Uses try-with-resources for automatic resource management.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class BetTypeDaoImpl implements Dao<BetType, Integer> {
     private static final Logger logger = LogManager.getLogger();
     private final ConnectionPool connectionPool;
@@ -32,11 +26,7 @@ public class BetTypeDaoImpl implements Dao<BetType, Integer> {
     private static final String UPDATE = "UPDATE bet_types SET name = ?, description = ?, multiplier = ? WHERE id = ?";
     private static final String DELETE = "DELETE FROM bet_types WHERE id = ?";
 
-    /**
-     * Constructor.
-     * 
-     * @param connectionPool connection pool instance
-     */
+    
     public BetTypeDaoImpl(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -143,13 +133,7 @@ public class BetTypeDaoImpl implements Dao<BetType, Integer> {
         }
     }
 
-    /**
-     * Maps ResultSet row to BetType object.
-     * 
-     * @param resultSet ResultSet containing bet type data
-     * @return BetType object
-     * @throws SQLException if mapping fails
-     */
+    
     private BetType mapResultSetToBetType(ResultSet resultSet) throws SQLException {
         BetType betType = new BetType();
         betType.setId(resultSet.getInt("id"));

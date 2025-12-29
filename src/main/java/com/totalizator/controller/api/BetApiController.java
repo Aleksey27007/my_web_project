@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.totalizator.model.Bet;
 import com.totalizator.model.User;
 import com.totalizator.service.BetService;
-import com.totalizator.service.impl.BetServiceImpl;
+import com.totalizator.service.factory.ServiceFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,13 +17,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * REST API controller for bet operations.
- * Web Service implementation.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 @WebServlet(name = "betApiController", urlPatterns = "/api/bets/*")
 public class BetApiController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
@@ -31,7 +25,7 @@ public class BetApiController extends HttpServlet {
     private final ObjectMapper objectMapper;
 
     public BetApiController() {
-        this.betService = new BetServiceImpl();
+        this.betService = ServiceFactory.getInstance().getBetService();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -52,17 +46,17 @@ public class BetApiController extends HttpServlet {
         
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // Get all bets for current user
+
                 List<Bet> bets = betService.findByUserId(user.getId());
                 objectMapper.writeValue(response.getWriter(), bets);
             } else if (pathInfo.startsWith("/competition/")) {
-                // Get bets for a competition
+
                 String competitionIdStr = pathInfo.substring("/competition/".length());
                 int competitionId = Integer.parseInt(competitionIdStr);
                 List<Bet> bets = betService.findByCompetitionId(competitionId);
                 objectMapper.writeValue(response.getWriter(), bets);
             } else {
-                // Get bet by id
+
                 String betIdStr = pathInfo.substring(1);
                 int betId = Integer.parseInt(betIdStr);
                 betService.findById(betId).ifPresent(bet -> {

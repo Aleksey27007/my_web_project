@@ -2,32 +2,18 @@ package com.totalizator.model;
 
 import java.math.BigDecimal;
 
-/**
- * Entity class representing a type of bet.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class BetType {
     private int id;
     private String name;
     private String description;
     private BigDecimal multiplier;
 
-    /**
-     * Default constructor.
-     */
+    
     public BetType() {
     }
 
-    /**
-     * Constructor with parameters.
-     * 
-     * @param id          bet type identifier
-     * @param name        bet type name
-     * @param description bet type description
-     * @param multiplier  win multiplier
-     */
+    
     public BetType(int id, String name, String description, BigDecimal multiplier) {
         this.id = id;
         this.name = name;

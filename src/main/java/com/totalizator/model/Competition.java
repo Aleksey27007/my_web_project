@@ -2,12 +2,7 @@ package com.totalizator.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity class representing a sports competition.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class Competition {
     private int id;
     private String title;
@@ -24,29 +19,16 @@ public class Competition {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    /**
-     * Enumeration for competition status.
-     */
+    
     public enum CompetitionStatus {
         SCHEDULED, IN_PROGRESS, FINISHED, CANCELLED
     }
 
-    /**
-     * Default constructor.
-     */
+    
     public Competition() {
     }
 
-    /**
-     * Constructor with parameters.
-     * 
-     * @param id          competition identifier
-     * @param title       competition title
-     * @param sportType   type of sport
-     * @param startDate   start date and time
-     * @param team1       first team name
-     * @param team2       second team name
-     */
+    
     public Competition(int id, String title, String sportType, LocalDateTime startDate, 
                        String team1, String team2) {
         this.id = id;

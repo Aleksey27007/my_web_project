@@ -1,27 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="com.totalizator.service.CompetitionService" %>
-<%@ page import="com.totalizator.service.impl.CompetitionServiceImpl" %>
-<%@ page import="java.util.List" %>
+<%@ page import="com.totalizator.service.factory.ServiceFactory" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-    // Load competitions if not already set in request
+    // Fallback: Load competitions if not already set in request (in case HomeController is not called)
     if (request.getAttribute("competitions") == null) {
         try {
-            CompetitionService competitionService = new CompetitionServiceImpl();
-            List competitions = competitionService.findAll();
-            if (competitions == null) {
-                competitions = new java.util.ArrayList();
-            }
-            request.setAttribute("competitions", competitions);
-            
-            // Set default locale if not set
-            if (session.getAttribute("locale") == null) {
-                session.setAttribute("locale", java.util.Locale.ENGLISH);
-            }
+            java.util.List competitions = ServiceFactory.getInstance()
+                    .getCompetitionService().findAll();
+            request.setAttribute("competitions", 
+                    competitions != null ? competitions : new java.util.ArrayList());
         } catch (Exception e) {
             request.setAttribute("competitions", new java.util.ArrayList());
-            request.setAttribute("errorMessage", "Error loading competitions: " + e.getMessage());
         }
     }
 %>

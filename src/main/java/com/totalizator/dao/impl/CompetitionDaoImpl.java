@@ -16,13 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementation of CompetitionDao using JDBC with PreparedStatement for SQL injection protection.
- * Uses try-with-resources for automatic resource management.
- * 
- * @author Totalizator Team
- * @version 1.0
- */
+
 public class CompetitionDaoImpl implements CompetitionDao {
     private static final Logger logger = LogManager.getLogger();
     private final ConnectionPool connectionPool;
@@ -49,11 +43,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
     
     private static final String DELETE = "DELETE FROM competitions WHERE id = ?";
 
-    /**
-     * Constructor.
-     * 
-     * @param connectionPool connection pool instance
-     */
+    
     public CompetitionDaoImpl(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -99,7 +89,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
                         logger.debug("Mapped competition: id={}, title={}", competition.getId(), competition.getTitle());
                     } catch (Exception e) {
                         logger.error("Error mapping competition from ResultSet at row {}", count + 1, e);
-                        // Continue processing other rows
+
                     }
                 }
                 logger.info("Found {} competitions in database, successfully mapped {}", count, competitions.size());
@@ -240,13 +230,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
         }
     }
 
-    /**
-     * Maps ResultSet row to Competition object.
-     * 
-     * @param resultSet ResultSet containing competition data
-     * @return Competition object
-     * @throws SQLException if mapping fails
-     */
+    
     private Competition mapResultSetToCompetition(ResultSet resultSet) throws SQLException {
         try {
             Competition competition = new Competition();
