@@ -1,6 +1,30 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.totalizator.service.CompetitionService" %>
+<%@ page import="com.totalizator.service.impl.CompetitionServiceImpl" %>
+<%@ page import="java.util.List" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+    // Load competitions if not already set in request
+    if (request.getAttribute("competitions") == null) {
+        try {
+            CompetitionService competitionService = new CompetitionServiceImpl();
+            List competitions = competitionService.findAll();
+            if (competitions == null) {
+                competitions = new java.util.ArrayList();
+            }
+            request.setAttribute("competitions", competitions);
+            
+            // Set default locale if not set
+            if (session.getAttribute("locale") == null) {
+                session.setAttribute("locale", java.util.Locale.ENGLISH);
+            }
+        } catch (Exception e) {
+            request.setAttribute("competitions", new java.util.ArrayList());
+            request.setAttribute("errorMessage", "Error loading competitions: " + e.getMessage());
+        }
+    }
+%>
 <fmt:setLocale value="${sessionScope.locale != null ? sessionScope.locale : 'en'}" />
 <fmt:setBundle basename="messages" />
 <!DOCTYPE html>
@@ -115,12 +139,14 @@
         
         <h2><fmt:message key="home.competitions" /></h2>
         
-        <c:if test="${competitions == null}">
-            <p style="color: orange;">Loading competitions...</p>
+        <c:if test="${errorMessage != null}">
+            <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+                <strong>Error:</strong> ${errorMessage}
+            </div>
         </c:if>
         
         <c:choose>
-            <c:when test="${competitions != null && !empty competitions}">
+            <c:when test="${competitions != null && competitions.size() > 0}">
                 <p style="color: green; margin-bottom: 10px;">Found ${competitions.size()} competition(s)</p>
                 <table>
                     <thead>
@@ -136,19 +162,33 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach var="competition" items="${competitions}">
+                        <c:forEach var="competition" items="${competitions}" varStatus="loop">
                             <tr>
-                                <td>${competition.title}</td>
-                                <td>${competition.team1}</td>
-                                <td>${competition.team2}</td>
-                                <td>${competition.startDate}</td>
+                                <td><c:out value="${competition.title}" default="N/A" /></td>
+                                <td><c:out value="${competition.team1}" default="N/A" /></td>
+                                <td><c:out value="${competition.team2}" default="N/A" /></td>
                                 <td>
-                                    <c:if test="${competition.status != null}">
-                                        <fmt:message key="status.${competition.status.name()}" />
-                                    </c:if>
-                                    <c:if test="${competition.status == null}">
-                                        N/A
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${competition.startDate != null}">
+                                            ${competition.startDate}
+                                        </c:when>
+                                        <c:otherwise>N/A</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${competition.status != null}">
+                                            <c:set var="statusName" value="${competition.status.name()}" />
+                                            <c:choose>
+                                                <c:when test="${statusName == 'SCHEDULED'}"><fmt:message key="status.SCHEDULED" /></c:when>
+                                                <c:when test="${statusName == 'IN_PROGRESS'}"><fmt:message key="status.IN_PROGRESS" /></c:when>
+                                                <c:when test="${statusName == 'FINISHED'}"><fmt:message key="status.FINISHED" /></c:when>
+                                                <c:when test="${statusName == 'CANCELLED'}"><fmt:message key="status.CANCELLED" /></c:when>
+                                                <c:otherwise>${statusName}</c:otherwise>
+                                            </c:choose>
+                                        </c:when>
+                                        <c:otherwise>N/A</c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <c:if test="${sessionScope.user != null}">
                                     <td>
