@@ -36,10 +36,21 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   
-  <!-- Welcome File -->
-  <welcome-file-list>
+  <!-- Home Controller Servlet - explicitly registered to handle root path -->
+  <servlet>
+    <servlet-name>homeController</servlet-name>
+    <servlet-class>com.totalizator.controller.HomeController</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>homeController</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Welcome File - removed to allow HomeController to handle root path -->
+  <!-- <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
-  </welcome-file-list>
+  </welcome-file-list> -->
   
   <!-- Metadata for annotation scanning -->
   <metadata-complete>false</metadata-complete>
