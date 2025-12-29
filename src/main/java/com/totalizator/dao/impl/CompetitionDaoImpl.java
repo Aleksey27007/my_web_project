@@ -83,28 +83,33 @@ public class CompetitionDaoImpl implements CompetitionDao {
         try {
             connection = connectionPool.getConnection();
             if (connection == null) {
-                logger.error("Failed to get database connection");
-                return competitions;
+                logger.error("Failed to get database connection in findAll()");
+                throw new RuntimeException("Failed to get database connection");
             }
             
+            logger.info("Executing query: {}", FIND_ALL);
             try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
                  ResultSet resultSet = statement.executeQuery()) {
-                logger.info("Executing query: {}", FIND_ALL);
                 int count = 0;
                 while (resultSet.next()) {
                     try {
-                        competitions.add(mapResultSetToCompetition(resultSet));
+                        Competition competition = mapResultSetToCompetition(resultSet);
+                        competitions.add(competition);
                         count++;
+                        logger.debug("Mapped competition: id={}, title={}", competition.getId(), competition.getTitle());
                     } catch (Exception e) {
-                        logger.error("Error mapping competition from ResultSet", e);
+                        logger.error("Error mapping competition from ResultSet at row {}", count + 1, e);
+                        // Continue processing other rows
                     }
                 }
-                logger.info("Found {} competitions in database", count);
+                logger.info("Found {} competitions in database, successfully mapped {}", count, competitions.size());
             }
         } catch (SQLException e) {
-            logger.error("Error finding all competitions", e);
+            logger.error("SQL error finding all competitions", e);
+            throw new RuntimeException("Database error while loading competitions", e);
         } catch (Exception e) {
             logger.error("Unexpected error in findAll()", e);
+            throw new RuntimeException("Unexpected error while loading competitions", e);
         } finally {
             if (connection != null) {
                 connectionPool.releaseConnection(connection);
@@ -243,55 +248,87 @@ public class CompetitionDaoImpl implements CompetitionDao {
      * @throws SQLException if mapping fails
      */
     private Competition mapResultSetToCompetition(ResultSet resultSet) throws SQLException {
-        Competition competition = new Competition();
-        competition.setId(resultSet.getInt("id"));
-        competition.setTitle(resultSet.getString("title"));
-        competition.setDescription(resultSet.getString("description"));
-        competition.setSportType(resultSet.getString("sport_type"));
-        
-        Timestamp startDate = resultSet.getTimestamp("start_date");
-        if (startDate != null) {
+        try {
+            Competition competition = new Competition();
+            competition.setId(resultSet.getInt("id"));
+            
+            String title = resultSet.getString("title");
+            if (title == null) {
+                logger.warn("Competition with id {} has null title", competition.getId());
+                title = "Untitled Competition";
+            }
+            competition.setTitle(title);
+            
+            competition.setDescription(resultSet.getString("description"));
+            competition.setSportType(resultSet.getString("sport_type"));
+            
+            Timestamp startDate = resultSet.getTimestamp("start_date");
+            if (startDate == null) {
+                logger.error("Competition with id {} has null start_date, which is required", competition.getId());
+                throw new SQLException("start_date cannot be null for competition id: " + competition.getId());
+            }
             competition.setStartDate(startDate.toLocalDateTime());
-        }
-        
-        Timestamp endDate = resultSet.getTimestamp("end_date");
-        if (endDate != null) {
-            competition.setEndDate(endDate.toLocalDateTime());
-        }
-        
-        String statusStr = resultSet.getString("status");
-        if (statusStr != null) {
-            try {
-                competition.setStatus(Competition.CompetitionStatus.valueOf(statusStr));
-            } catch (IllegalArgumentException e) {
+            
+            Timestamp endDate = resultSet.getTimestamp("end_date");
+            if (endDate != null) {
+                competition.setEndDate(endDate.toLocalDateTime());
+            }
+            
+            String statusStr = resultSet.getString("status");
+            if (statusStr != null && !statusStr.isEmpty()) {
+                try {
+                    competition.setStatus(Competition.CompetitionStatus.valueOf(statusStr));
+                } catch (IllegalArgumentException e) {
+                    logger.warn("Invalid status '{}' for competition id {}, defaulting to SCHEDULED", statusStr, competition.getId());
+                    competition.setStatus(Competition.CompetitionStatus.SCHEDULED);
+                }
+            } else {
                 competition.setStatus(Competition.CompetitionStatus.SCHEDULED);
             }
+            
+            competition.setResult(resultSet.getString("result"));
+            
+            String team1 = resultSet.getString("team1");
+            if (team1 == null) {
+                logger.warn("Competition with id {} has null team1", competition.getId());
+                team1 = "Team 1";
+            }
+            competition.setTeam1(team1);
+            
+            String team2 = resultSet.getString("team2");
+            if (team2 == null) {
+                logger.warn("Competition with id {} has null team2", competition.getId());
+                team2 = "Team 2";
+            }
+            competition.setTeam2(team2);
+            
+            int score1 = resultSet.getInt("score1");
+            if (!resultSet.wasNull()) {
+                competition.setScore1(score1);
+            }
+            
+            int score2 = resultSet.getInt("score2");
+            if (!resultSet.wasNull()) {
+                competition.setScore2(score2);
+            }
+            
+            Timestamp createdAt = resultSet.getTimestamp("created_at");
+            if (createdAt != null) {
+                competition.setCreatedAt(createdAt.toLocalDateTime());
+            }
+            
+            Timestamp updatedAt = resultSet.getTimestamp("updated_at");
+            if (updatedAt != null) {
+                competition.setUpdatedAt(updatedAt.toLocalDateTime());
+            }
+            
+            return competition;
+        } catch (SQLException e) {
+            logger.error("Error mapping ResultSet to Competition", e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error mapping ResultSet to Competition", e);
+            throw new SQLException("Error mapping competition: " + e.getMessage(), e);
         }
-        
-        competition.setResult(resultSet.getString("result"));
-        competition.setTeam1(resultSet.getString("team1"));
-        competition.setTeam2(resultSet.getString("team2"));
-        
-        int score1 = resultSet.getInt("score1");
-        if (!resultSet.wasNull()) {
-            competition.setScore1(score1);
-        }
-        
-        int score2 = resultSet.getInt("score2");
-        if (!resultSet.wasNull()) {
-            competition.setScore2(score2);
-        }
-        
-        Timestamp createdAt = resultSet.getTimestamp("created_at");
-        if (createdAt != null) {
-            competition.setCreatedAt(createdAt.toLocalDateTime());
-        }
-        
-        Timestamp updatedAt = resultSet.getTimestamp("updated_at");
-        if (updatedAt != null) {
-            competition.setUpdatedAt(updatedAt.toLocalDateTime());
-        }
-        
-        return competition;
     }
 }
