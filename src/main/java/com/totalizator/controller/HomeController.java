@@ -10,6 +10,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,14 +20,10 @@ import java.util.List;
 
 @WebServlet(name = "homeController", urlPatterns = "/")
 public class HomeController extends HttpServlet {
-    private static final org.apache.logging.log4j.Logger logger = 
-            org.apache.logging.log4j.LogManager.getLogger(HomeController.class);
-    private final CompetitionService competitionService;
+    private static final Logger logger = LogManager.getLogger();
+    private final CompetitionService competitionService = ServiceFactory.getInstance().getCompetitionService();
     private final BaseController baseController = new BaseController() {};
 
-    public HomeController() {
-        this.competitionService = ServiceFactory.getInstance().getCompetitionService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,7 +31,7 @@ public class HomeController extends HttpServlet {
         logger.info("HomeController.doGet() called for URI: {}", request.getRequestURI());
         
         baseController.ensureDefaultLocale(request);
-        User user = (User) baseController.getUserFromSession(request);
+        User user = baseController.getUserFromSession(request);
         
         logger.info("HomeController: Starting to load competitions for user: {}", 
                 user != null ? user.getUsername() : "anonymous");
