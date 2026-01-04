@@ -17,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,28 +27,23 @@ import java.util.Optional;
 @WebServlet(name = "betController", urlPatterns = "/bets/*")
 public class BetController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
-    private final BetService betService;
-    private final CompetitionService competitionService;
-    private final Dao<BetType, Integer> betTypeDao;
+    private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
+    private static final BetService betService = serviceFactory.getBetService();
+    private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
+    private static final Dao<BetType, Integer> betTypeDao = DaoFactory.getInstance().getBetTypeDao();
+    private static final BaseController baseController = new BaseController();
 
-    public BetController() {
-        ServiceFactory serviceFactory = ServiceFactory.getInstance();
-        this.betService = serviceFactory.getBetService();
-        this.competitionService = serviceFactory.getCompetitionService();
-        this.betTypeDao = DaoFactory.getInstance().getBetTypeDao();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        BaseController baseController = new BaseController() {};
         if (!baseController.requireAuthentication(request, response)) {
             return;
         }
-        
+
         User user = baseController.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
-        
+
         if (pathInfo == null || pathInfo.equals("/")) {
             List<Bet> bets = betService.findByUserId(user.getId());
             request.setAttribute("bets", bets);
@@ -58,11 +54,11 @@ public class BetController extends HttpServlet {
             try {
                 int competitionId = Integer.parseInt(competitionIdStr);
                 Optional<Competition> competitionOptional = competitionService.findById(competitionId);
-                if (!competitionOptional.isPresent()) {
+                if (competitionOptional.isEmpty()) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return;
                 }
-                
+
                 List<BetType> betTypes = betTypeDao.findAll();
                 request.setAttribute("competition", competitionOptional.get());
                 request.setAttribute("betTypes", betTypes);
@@ -77,40 +73,39 @@ public class BetController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        BaseController baseController = new BaseController() {};
         if (!baseController.requireAuthentication(request, response)) {
             return;
         }
-        
+
         User user = baseController.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
-        
+
         if (pathInfo != null && pathInfo.equals("/create")) {
             try {
                 int competitionId = Integer.parseInt(request.getParameter("competitionId"));
                 int betTypeId = Integer.parseInt(request.getParameter("betTypeId"));
                 BigDecimal amount = new BigDecimal(request.getParameter("amount"));
                 String predictedValue = request.getParameter("predictedValue");
-                
+
                 Optional<Competition> competitionOptional = competitionService.findById(competitionId);
                 Optional<BetType> betTypeOptional = betTypeDao.findById(betTypeId);
-                
-                if (!competitionOptional.isPresent() || !betTypeOptional.isPresent()) {
+
+                if (competitionOptional.isEmpty() || betTypeOptional.isEmpty()) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                
+
                 Bet bet = new Bet();
                 bet.setUser(user);
                 bet.setCompetition(competitionOptional.get());
                 bet.setBetType(betTypeOptional.get());
                 bet.setAmount(amount);
                 bet.setPredictedValue(predictedValue);
-                
+
                 betService.placeBet(bet);
-                logger.info("Bet placed by user {}: competition={}, amount={}", 
+                logger.info("Bet placed by user {}: competition={}, amount={}",
                         user.getUsername(), competitionId, amount);
-                
+
                 response.sendRedirect(request.getContextPath() + "/bets/");
             } catch (Exception e) {
                 logger.error("Error placing bet", e);
