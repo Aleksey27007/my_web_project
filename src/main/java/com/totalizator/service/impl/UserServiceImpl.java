@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger();
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+    private static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@(.+)$";
     private final UserDao userDao;
 
     
@@ -163,7 +163,7 @@ public class UserServiceImpl implements UserService {
 
     
     private boolean isValidEmail(String email) {
-        return email != null && email.matches(EMAIL_REGEX);
+        return email != null && email.matches(EMAIL_PATTERN);
     }
 
     
