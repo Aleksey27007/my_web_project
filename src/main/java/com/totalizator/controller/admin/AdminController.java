@@ -1,6 +1,5 @@
 package com.totalizator.controller.admin;
 
-import com.totalizator.controller.RoleController;
 import com.totalizator.model.Competition;
 import com.totalizator.model.Role;
 import com.totalizator.model.User;
@@ -25,7 +24,7 @@ import java.util.Optional;
 
 
 @WebServlet(name = "adminController", urlPatterns = "/admin/*")
-public class AdminController extends HttpServlet implements RoleController {
+public class AdminController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
     private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
     private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
