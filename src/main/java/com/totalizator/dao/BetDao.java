@@ -6,11 +6,7 @@ import java.util.List;
 
 
 public interface BetDao extends Dao<Bet, Integer> {
-    
-    
     List<Bet> findByUserId(Integer userId);
-    
-    
     List<Bet> findByCompetitionId(Integer competitionId);
 }
 

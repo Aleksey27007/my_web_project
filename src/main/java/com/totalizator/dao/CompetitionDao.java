@@ -6,8 +6,6 @@ import java.util.List;
 
 
 public interface CompetitionDao extends Dao<Competition, Integer> {
-    
-    
     List<Competition> findByStatus(String status);
 }
 
