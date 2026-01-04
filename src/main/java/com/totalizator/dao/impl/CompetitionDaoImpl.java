@@ -24,26 +24,26 @@ public class CompetitionDaoImpl implements CompetitionDao {
     private static final String FIND_BY_ID = "SELECT id, title, description, sport_type, start_date, " +
             "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
             "FROM competitions WHERE id = ?";
-    
+
     private static final String FIND_ALL = "SELECT id, title, description, sport_type, start_date, " +
             "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
             "FROM competitions ORDER BY start_date DESC";
-    
+
     private static final String FIND_BY_STATUS = "SELECT id, title, description, sport_type, start_date, " +
             "end_date, status, result, team1, team2, score1, score2, created_at, updated_at " +
             "FROM competitions WHERE status = ? ORDER BY start_date DESC";
-    
+
     private static final String INSERT = "INSERT INTO competitions (title, description, sport_type, " +
             "start_date, end_date, status, result, team1, team2, score1, score2) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     private static final String UPDATE = "UPDATE competitions SET title = ?, description = ?, " +
             "sport_type = ?, start_date = ?, end_date = ?, status = ?, result = ?, " +
             "team1 = ?, team2 = ?, score1 = ?, score2 = ? WHERE id = ?";
-    
+
     private static final String DELETE = "DELETE FROM competitions WHERE id = ?";
 
-    
+
     public CompetitionDaoImpl(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -69,31 +69,22 @@ public class CompetitionDaoImpl implements CompetitionDao {
     @Override
     public List<Competition> findAll() {
         List<Competition> competitions = new ArrayList<>();
-        Connection connection = null;
-        try {
-            connection = connectionPool.getConnection();
-            if (connection == null) {
-                logger.error("Failed to get database connection in findAll()");
-                throw new RuntimeException("Failed to get database connection");
-            }
-            
-            logger.info("Executing query: {}", FIND_ALL);
-            try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
-                 ResultSet resultSet = statement.executeQuery()) {
-                int count = 0;
-                while (resultSet.next()) {
-                    try {
-                        Competition competition = mapResultSetToCompetition(resultSet);
-                        competitions.add(competition);
-                        count++;
-                        logger.debug("Mapped competition: id={}, title={}", competition.getId(), competition.getTitle());
-                    } catch (Exception e) {
-                        logger.error("Error mapping competition from ResultSet at row {}", count + 1, e);
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(FIND_ALL);
+             ResultSet resultSet = statement.executeQuery()) {
+            int count = 0;
+            while (resultSet.next()) {
+                try {
+                    Competition competition = mapResultSetToCompetition(resultSet);
+                    competitions.add(competition);
+                    count++;
+                    logger.debug("Mapped competition: id={}, title={}", competition.getId(), competition.getTitle());
+                } catch (Exception e) {
+                    logger.error("Error mapping competition from ResultSet at row {}", count + 1, e);
 
-                    }
                 }
-                logger.info("Found {} competitions in database, successfully mapped {}", count, competitions.size());
             }
+            logger.info("Found {} competitions in database, successfully mapped {}", count, competitions.size());
         } catch (SQLException e) {
             logger.error("SQL error finding all competitions", e);
             throw new RuntimeException("Database error while loading competitions", e);
@@ -101,9 +92,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
             logger.error("Unexpected error in findAll()", e);
             throw new RuntimeException("Unexpected error while loading competitions", e);
         } finally {
-            if (connection != null) {
-                connectionPool.releaseConnection(connection);
-            }
+            connectionPool.releaseConnection(connection);
         }
         logger.info("Returning {} competitions", competitions.size());
         return competitions;
@@ -138,7 +127,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
             if (affectedRows == 0) {
                 throw new SQLException("Creating competition failed, no rows affected.");
             }
-            
+
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     competition.setId(generatedKeys.getInt(1));
@@ -146,7 +135,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
                     throw new SQLException("Creating competition failed, no ID obtained.");
                 }
             }
-            
+
             logger.info("Competition saved with id: {}", competition.getId());
             return competition;
         } catch (SQLException e) {
@@ -164,7 +153,7 @@ public class CompetitionDaoImpl implements CompetitionDao {
             changeCompetitionToStatement(competition, statement);
 
             statement.setInt(12, competition.getId());
-            
+
             int affectedRows = statement.executeUpdate();
             logger.info("Competition updated: {} rows affected", affectedRows);
             return affectedRows > 0;
@@ -230,34 +219,34 @@ public class CompetitionDaoImpl implements CompetitionDao {
         }
     }
 
-    
+
     private Competition mapResultSetToCompetition(ResultSet resultSet) throws SQLException {
         try {
             Competition competition = new Competition();
             competition.setId(resultSet.getInt("id"));
-            
+
             String title = resultSet.getString("title");
             if (title == null) {
                 logger.warn("Competition with id {} has null title", competition.getId());
                 title = "Untitled Competition";
             }
             competition.setTitle(title);
-            
+
             competition.setDescription(resultSet.getString("description"));
             competition.setSportType(resultSet.getString("sport_type"));
-            
+
             Timestamp startDate = resultSet.getTimestamp("start_date");
             if (startDate == null) {
                 logger.error("Competition with id {} has null start_date, which is required", competition.getId());
                 throw new SQLException("start_date cannot be null for competition id: " + competition.getId());
             }
             competition.setStartDate(startDate.toLocalDateTime());
-            
+
             Timestamp endDate = resultSet.getTimestamp("end_date");
             if (endDate != null) {
                 competition.setEndDate(endDate.toLocalDateTime());
             }
-            
+
             String statusStr = resultSet.getString("status");
             if (statusStr != null && !statusStr.isEmpty()) {
                 try {
@@ -269,43 +258,43 @@ public class CompetitionDaoImpl implements CompetitionDao {
             } else {
                 competition.setStatus(Competition.CompetitionStatus.SCHEDULED);
             }
-            
+
             competition.setResult(resultSet.getString("result"));
-            
+
             String team1 = resultSet.getString("team1");
             if (team1 == null) {
                 logger.warn("Competition with id {} has null team1", competition.getId());
                 team1 = "Team 1";
             }
             competition.setTeam1(team1);
-            
+
             String team2 = resultSet.getString("team2");
             if (team2 == null) {
                 logger.warn("Competition with id {} has null team2", competition.getId());
                 team2 = "Team 2";
             }
             competition.setTeam2(team2);
-            
+
             int score1 = resultSet.getInt("score1");
             if (!resultSet.wasNull()) {
                 competition.setScore1(score1);
             }
-            
+
             int score2 = resultSet.getInt("score2");
             if (!resultSet.wasNull()) {
                 competition.setScore2(score2);
             }
-            
+
             Timestamp createdAt = resultSet.getTimestamp("created_at");
             if (createdAt != null) {
                 competition.setCreatedAt(createdAt.toLocalDateTime());
             }
-            
+
             Timestamp updatedAt = resultSet.getTimestamp("updated_at");
             if (updatedAt != null) {
                 competition.setUpdatedAt(updatedAt.toLocalDateTime());
             }
-            
+
             return competition;
         } catch (SQLException e) {
             logger.error("Error mapping ResultSet to Competition", e);
