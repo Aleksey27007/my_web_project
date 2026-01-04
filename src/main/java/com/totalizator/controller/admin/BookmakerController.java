@@ -1,14 +1,12 @@
 package com.totalizator.controller.admin;
 
-import com.totalizator.controller.BaseController;
 import com.totalizator.dao.BookmakerDao;
-import com.totalizator.dao.impl.BookmakerDaoImpl;
 import com.totalizator.model.Competition;
 import com.totalizator.model.User;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.factory.DaoFactory;
 import com.totalizator.service.factory.ServiceFactory;
-import com.totalizator.util.ConnectionPool;
+import com.totalizator.util.ValidationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,9 +18,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Optional;
 
 
 @WebServlet(name = "bookmakerController", urlPatterns = "/bookmaker/*")
@@ -30,19 +27,18 @@ public class BookmakerController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
     private static final CompetitionService competitionService = ServiceFactory.getInstance().getCompetitionService();
     private static final BookmakerDao bookmakerDao = DaoFactory.getInstance().getBookmakerDao();
+    private static final ValidationUtil validationUtil = new ValidationUtil();
 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        BaseController baseController = new BaseController() {
-        };
-        if (!baseController.requireAuthentication(request, response)
-                || !baseController.requireRole(request, response, "BOOKMAKER")) {
+        if (!validationUtil.requireAuthentication(request, response)
+                || !validationUtil.requireRole(request, response, "BOOKMAKER")) {
             return;
         }
 
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
 
         String pathInfo = request.getPathInfo();
 
@@ -56,7 +52,7 @@ public class BookmakerController extends HttpServlet {
             String competitionIdStr = pathInfo.substring("/competition/".length());
             try {
                 int competitionId = Integer.parseInt(competitionIdStr);
-                java.util.Optional<Competition> competitionOptional = competitionService.findById(competitionId);
+                Optional<Competition> competitionOptional = competitionService.findById(competitionId);
 
                 if (competitionOptional.isPresent()) {
                     Competition competition = competitionOptional.get();
@@ -76,15 +72,13 @@ public class BookmakerController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        BaseController baseController = new BaseController() {
-        };
-        if (!baseController.requireAuthentication(request, response)
-                || !baseController.requireRole(request, response, "BOOKMAKER")) {
+            throws IOException {
+        if (!validationUtil.requireAuthentication(request, response)
+                || !validationUtil.requireRole(request, response, "BOOKMAKER")) {
             return;
         }
 
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
 
         String pathInfo = request.getPathInfo();
 
