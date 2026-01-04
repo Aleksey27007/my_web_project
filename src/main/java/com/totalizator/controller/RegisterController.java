@@ -5,6 +5,7 @@ import com.totalizator.model.User;
 import com.totalizator.service.UserService;
 import com.totalizator.service.factory.ServiceFactory;
 
+import com.totalizator.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,11 +17,7 @@ import java.math.BigDecimal;
 
 @WebServlet(name = "registerController", urlPatterns = "/register")
 public class RegisterController extends HttpServlet {
-    private final UserService userService;
-
-    public RegisterController() {
-        this.userService = ServiceFactory.getInstance().getUserService();
-    }
+    private final UserService userService = ServiceFactory.getInstance().getUserService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,7 +35,7 @@ public class RegisterController extends HttpServlet {
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         
-        if (!com.totalizator.util.ValidationUtils.areAllNotEmpty(username, email, password)) {
+        if (!ValidationUtil.areAllNotEmpty(username, email, password)) {
             request.setAttribute("error", "All required fields must be filled");
             request.getRequestDispatcher("/pages/register.jsp").forward(request, response);
             return;

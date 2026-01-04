@@ -5,6 +5,7 @@ import com.totalizator.model.User;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.factory.ServiceFactory;
 
+import com.totalizator.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,16 +23,16 @@ import java.util.List;
 public class HomeController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
     private final CompetitionService competitionService = ServiceFactory.getInstance().getCompetitionService();
-    private final BaseController baseController = new BaseController() {};
+    private static final ValidationUtil validationUtil = new ValidationUtil();
 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         logger.info("HomeController.doGet() called for URI: {}", request.getRequestURI());
-        
-        baseController.ensureDefaultLocale(request);
-        User user = baseController.getUserFromSession(request);
+
+        validationUtil.ensureDefaultLocale(request);
+        User user = validationUtil.getUserFromSession(request);
         
         logger.info("HomeController: Starting to load competitions for user: {}", 
                 user != null ? user.getUsername() : "anonymous");

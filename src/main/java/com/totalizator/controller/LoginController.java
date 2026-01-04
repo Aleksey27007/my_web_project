@@ -4,6 +4,7 @@ import com.totalizator.model.User;
 import com.totalizator.service.UserService;
 import com.totalizator.service.factory.ServiceFactory;
 
+import com.totalizator.util.ValidationUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,11 +17,8 @@ import java.util.Optional;
 
 @WebServlet(name = "loginController", urlPatterns = "/login")
 public class LoginController extends HttpServlet {
-    private final UserService userService;
+    private final UserService userService = ServiceFactory.getInstance().getUserService();
 
-    public LoginController() {
-        this.userService = ServiceFactory.getInstance().getUserService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,7 +38,7 @@ public class LoginController extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         
-        if (!com.totalizator.util.ValidationUtils.areAllNotEmpty(username, password)) {
+        if (!ValidationUtil.areAllNotEmpty(username, password)) {
             request.setAttribute("error", "Username and password are required");
             request.getRequestDispatcher("/pages/login.jsp").forward(request, response);
             return;
