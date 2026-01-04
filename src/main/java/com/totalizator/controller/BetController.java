@@ -28,12 +28,21 @@ import java.util.Optional;
 @WebServlet(name = "betController", urlPatterns = "/bets/*")
 public class BetController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
-    private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
-    private static final BetService betService = serviceFactory.getBetService();
-    private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
-    private static final Dao<BetType, Integer> betTypeDao = DaoFactory.getInstance().getBetTypeDao();
-    private static final ValidationUtil validationUtil = new ValidationUtil();
+    private BetService betService;
+    private CompetitionService competitionService;
+    private Dao<BetType, Integer> betTypeDao;
+    private ValidationUtil validationUtil;
 
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        competitionService = serviceFactory.getCompetitionService();
+        betService = serviceFactory.getBetService();
+        betTypeDao = DaoFactory.getInstance().getBetTypeDao();
+        validationUtil = new ValidationUtil();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

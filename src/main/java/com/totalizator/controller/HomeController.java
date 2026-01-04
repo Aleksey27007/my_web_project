@@ -3,6 +3,7 @@ package com.totalizator.controller;
 import com.totalizator.model.Competition;
 import com.totalizator.model.User;
 import com.totalizator.service.CompetitionService;
+import com.totalizator.service.factory.DaoFactory;
 import com.totalizator.service.factory.ServiceFactory;
 
 import com.totalizator.util.ValidationUtil;
@@ -22,9 +23,16 @@ import java.util.List;
 @WebServlet(name = "homeController", urlPatterns = "/")
 public class HomeController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
-    private final CompetitionService competitionService = ServiceFactory.getInstance().getCompetitionService();
-    private static final ValidationUtil validationUtil = new ValidationUtil();
+    private CompetitionService competitionService;
+    private ValidationUtil validationUtil;
 
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        competitionService = serviceFactory.getCompetitionService();
+        validationUtil = new ValidationUtil();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

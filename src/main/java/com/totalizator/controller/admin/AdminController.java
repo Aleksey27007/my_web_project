@@ -26,11 +26,19 @@ import java.util.Optional;
 @WebServlet(name = "adminController", urlPatterns = "/admin/*")
 public class AdminController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
-    private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
-    private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
-    private static final UserService userService = serviceFactory.getUserService();
-    private static final ValidationUtil validationUtil = new ValidationUtil();
+    private ValidationUtil validationUtil;
+    private CompetitionService competitionService;
+    private UserService userService;
 
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        competitionService = serviceFactory.getCompetitionService();
+        userService = serviceFactory.getUserService();
+        validationUtil = new ValidationUtil();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

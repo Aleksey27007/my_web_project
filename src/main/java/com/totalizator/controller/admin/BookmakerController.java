@@ -25,10 +25,18 @@ import java.util.Optional;
 @WebServlet(name = "bookmakerController", urlPatterns = "/bookmaker/*")
 public class BookmakerController extends HttpServlet {
     private static final Logger logger = LogManager.getLogger();
-    private static final CompetitionService competitionService = ServiceFactory.getInstance().getCompetitionService();
-    private static final BookmakerDao bookmakerDao = DaoFactory.getInstance().getBookmakerDao();
-    private static final ValidationUtil validationUtil = new ValidationUtil();
+    private CompetitionService competitionService;
+    private BookmakerDao bookmakerDao;
+    private ValidationUtil validationUtil;
 
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ServiceFactory serviceFactory = ServiceFactory.getInstance();
+        competitionService = serviceFactory.getCompetitionService();
+        bookmakerDao = DaoFactory.getInstance().getBookmakerDao();
+        validationUtil = new ValidationUtil();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
