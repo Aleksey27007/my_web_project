@@ -1,13 +1,7 @@
 package com.totalizator.service.factory;
 
-import com.totalizator.dao.BetDao;
-import com.totalizator.dao.CompetitionDao;
-import com.totalizator.dao.Dao;
-import com.totalizator.dao.UserDao;
-import com.totalizator.dao.impl.BetDaoImpl;
-import com.totalizator.dao.impl.BetTypeDaoImpl;
-import com.totalizator.dao.impl.CompetitionDaoImpl;
-import com.totalizator.dao.impl.UserDaoImpl;
+import com.totalizator.dao.*;
+import com.totalizator.dao.impl.*;
 import com.totalizator.model.BetType;
 import com.totalizator.util.ConnectionPool;
 
@@ -21,6 +15,10 @@ public class DaoFactory {
 
     public static DaoFactory getInstance() {
         return instance;
+    }
+
+    public BookmakerDao getBookmakerDao() {
+        return new BookmakerDaoImpl(connectionPool);
     }
 
     public UserDao getUserDao() {
