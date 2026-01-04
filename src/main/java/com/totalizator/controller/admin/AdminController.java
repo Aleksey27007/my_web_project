@@ -25,14 +25,10 @@ import java.util.Optional;
 @WebServlet(name = "adminController", urlPatterns = "/admin/*")
 public class AdminController extends HttpServlet implements RoleController {
     private static final Logger logger = LogManager.getLogger();
-    private final CompetitionService competitionService;
-    private final UserService userService;
+    private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
+    private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
+    private static final UserService userService = serviceFactory.getUserService();
 
-    public AdminController() {
-        ServiceFactory serviceFactory = ServiceFactory.getInstance();
-        this.competitionService = serviceFactory.getCompetitionService();
-        this.userService = serviceFactory.getUserService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -78,7 +74,7 @@ public class AdminController extends HttpServlet implements RoleController {
                 logger.error("Error generating result", e);
                 response.sendRedirect(request.getContextPath() + "/admin/competitions");
             }
-        } else if (pathInfo != null && pathInfo.startsWith("/user/delete/")) {
+        } else if (pathInfo.startsWith("/user/delete/")) {
             try {
                 String userIdStr = pathInfo.substring("/user/delete/".length());
                 int userId = Integer.parseInt(userIdStr);
@@ -127,23 +123,7 @@ public class AdminController extends HttpServlet implements RoleController {
         if (pathInfo != null && pathInfo.equals("/competition/create")) {
             try {
                 Competition competition = new Competition();
-                competition.setTitle(request.getParameter("title"));
-                competition.setDescription(request.getParameter("description"));
-                competition.setSportType(request.getParameter("sportType"));
-
-                String startDateStr = request.getParameter("startDate");
-                if (startDateStr != null && !startDateStr.isEmpty()) {
-
-                    startDateStr = startDateStr.replace("T", " ");
-                    if (startDateStr.length() == 16) {
-                        startDateStr += ":00"; // Add seconds if missing
-                    }
-                    competition.setStartDate(LocalDateTime.parse(startDateStr, 
-                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                }
-                
-                competition.setTeam1(request.getParameter("team1"));
-                competition.setTeam2(request.getParameter("team2"));
+                generateCompetitionFromRequest(request, competition);
                 competition.setStatus(Competition.CompetitionStatus.SCHEDULED);
                 
                 competitionService.createCompetition(competition);
@@ -244,23 +224,8 @@ public class AdminController extends HttpServlet implements RoleController {
                 }
                 
                 Competition competition = competitionOptional.get();
-                competition.setTitle(request.getParameter("title"));
-                competition.setDescription(request.getParameter("description"));
-                competition.setSportType(request.getParameter("sportType"));
-                
-                String startDateStr = request.getParameter("startDate");
-                if (startDateStr != null && !startDateStr.isEmpty()) {
-                    startDateStr = startDateStr.replace("T", " ");
-                    if (startDateStr.length() == 16) {
-                        startDateStr += ":00";
-                    }
-                    competition.setStartDate(LocalDateTime.parse(startDateStr, 
-                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                }
-                
-                competition.setTeam1(request.getParameter("team1"));
-                competition.setTeam2(request.getParameter("team2"));
-                
+                generateCompetitionFromRequest(request, competition);
+
                 competitionService.updateCompetition(competition);
                 logger.info("Competition updated successfully: {}", competition.getTitle());
                 response.sendRedirect(request.getContextPath() + "/admin/competitions");
@@ -273,5 +238,25 @@ public class AdminController extends HttpServlet implements RoleController {
                 request.getRequestDispatcher("/pages/admin/competitions.jsp").forward(request, response);
             }
         }
+    }
+
+    private void generateCompetitionFromRequest(HttpServletRequest request, Competition competition) {
+        competition.setTitle(request.getParameter("title"));
+        competition.setDescription(request.getParameter("description"));
+        competition.setSportType(request.getParameter("sportType"));
+
+        String startDateStr = request.getParameter("startDate");
+        if (startDateStr != null && !startDateStr.isEmpty()) {
+
+            startDateStr = startDateStr.replace("T", " ");
+            if (startDateStr.length() == 16) {
+                startDateStr += ":00"; // Add seconds if missing
+            }
+            competition.setStartDate(LocalDateTime.parse(startDateStr,
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        }
+
+        competition.setTeam1(request.getParameter("team1"));
+        competition.setTeam2(request.getParameter("team2"));
     }
 }
