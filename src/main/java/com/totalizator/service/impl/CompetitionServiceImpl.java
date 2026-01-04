@@ -4,6 +4,7 @@ import com.totalizator.dao.CompetitionDao;
 import com.totalizator.model.Competition;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.factory.DaoFactory;
+import com.totalizator.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +27,7 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public Optional<Competition> findById(Integer id) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
+        if (!ValidationUtil.isValidId(id)) {
             return Optional.empty();
         }
         return competitionDao.findById(id);
@@ -63,7 +64,7 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public boolean deleteCompetition(Integer id) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
+        if (!ValidationUtil.isValidId(id)) {
             return false;
         }
         logger.info("Deleting competition with id: {}", id);
@@ -73,14 +74,14 @@ public class CompetitionServiceImpl implements CompetitionService {
     @Override
     public boolean generateRandomResult(Integer competitionId) {
         Optional<Competition> competitionOptional = competitionDao.findById(competitionId);
-        if (!competitionOptional.isPresent()) {
+        if (competitionOptional.isEmpty()) {
             logger.warn("Competition not found for id: {}", competitionId);
             return false;
         }
         
         Competition competition = competitionOptional.get();
 
-        int score1 = random.nextInt(6); // 0-5 goals
+        int score1 = random.nextInt(6);
         int score2 = random.nextInt(6);
         
         competition.setScore1(score1);
