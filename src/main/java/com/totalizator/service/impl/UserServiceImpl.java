@@ -5,6 +5,7 @@ import com.totalizator.model.Role;
 import com.totalizator.model.User;
 import com.totalizator.service.UserService;
 import com.totalizator.service.factory.DaoFactory;
+import com.totalizator.util.ValidationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger();
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private final UserDao userDao;
 
     
@@ -28,7 +30,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findById(Integer id) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
+        if (!ValidationUtil.isValidId(id)) {
             return Optional.empty();
         }
         return userDao.findById(id);
@@ -128,7 +130,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUser(Integer id) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
+        if (!ValidationUtil.isValidId(id)) {
             return false;
         }
         return userDao.deleteById(id);
@@ -161,7 +163,7 @@ public class UserServiceImpl implements UserService {
 
     
     private boolean isValidEmail(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+        return email != null && email.matches(EMAIL_REGEX);
     }
 
     
