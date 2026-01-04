@@ -9,6 +9,7 @@ import com.totalizator.service.CompetitionService;
 import com.totalizator.dao.Dao;
 import com.totalizator.service.factory.DaoFactory;
 import com.totalizator.service.factory.ServiceFactory;
+import com.totalizator.util.ValidationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,17 +32,17 @@ public class BetController extends HttpServlet {
     private static final BetService betService = serviceFactory.getBetService();
     private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
     private static final Dao<BetType, Integer> betTypeDao = DaoFactory.getInstance().getBetTypeDao();
-    private static final BaseController baseController = new BaseController();
+    private static final ValidationUtil validationUtil = new ValidationUtil();
 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!baseController.requireAuthentication(request, response)) {
+        if (!validationUtil.requireAuthentication(request, response)) {
             return;
         }
 
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
@@ -73,11 +74,11 @@ public class BetController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!baseController.requireAuthentication(request, response)) {
+        if (!validationUtil.requireAuthentication(request, response)) {
             return;
         }
 
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
         String pathInfo = request.getPathInfo();
 
         if (pathInfo != null && pathInfo.equals("/create")) {
