@@ -3,12 +3,12 @@ package com.totalizator.controller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.Locale;
 
@@ -19,10 +19,10 @@ public class LocaleController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws IOException {
         String localeParam = request.getParameter("lang");
-        Locale locale = Locale.ENGLISH; // default
-        
+        Locale locale = Locale.ENGLISH;
+
         if (localeParam != null) {
             switch (localeParam.toLowerCase()) {
                 case "be":
@@ -35,10 +35,9 @@ public class LocaleController extends HttpServlet {
                     locale = Locale.forLanguageTag("ru-RU");
                     break;
                 default:
-                    locale = Locale.ENGLISH;
             }
         }
-        
+
         HttpSession session = request.getSession();
         session.setAttribute("locale", locale);
         logger.info("Locale changed to: {}", locale);
@@ -51,18 +50,7 @@ public class LocaleController extends HttpServlet {
 
                 if (referer.contains(contextPath)) {
 
-                    int contextIndex = referer.indexOf(contextPath);
-                    String pathAfterContext = referer.substring(contextIndex + contextPath.length());
-
-                    int queryIndex = pathAfterContext.indexOf('?');
-                    if (queryIndex >= 0) {
-                        pathAfterContext = pathAfterContext.substring(0, queryIndex);
-                    }
-
-                    int fragmentIndex = pathAfterContext.indexOf('#');
-                    if (fragmentIndex >= 0) {
-                        pathAfterContext = pathAfterContext.substring(0, fragmentIndex);
-                    }
+                    String pathAfterContext = collectThePath(referer, contextPath);
 
                     if (pathAfterContext.isEmpty() || pathAfterContext.equals("/")) {
                         response.sendRedirect(contextPath + "/");
@@ -82,6 +70,22 @@ public class LocaleController extends HttpServlet {
 
             response.sendRedirect(contextPath + "/");
         }
+    }
+
+    private static String collectThePath(String referer, String contextPath) {
+        int contextIndex = referer.indexOf(contextPath);
+        String pathAfterContext = referer.substring(contextIndex + contextPath.length());
+
+        int queryIndex = pathAfterContext.indexOf('?');
+        if (queryIndex >= 0) {
+            pathAfterContext = pathAfterContext.substring(0, queryIndex);
+        }
+
+        int fragmentIndex = pathAfterContext.indexOf('#');
+        if (fragmentIndex >= 0) {
+            pathAfterContext = pathAfterContext.substring(0, fragmentIndex);
+        }
+        return pathAfterContext;
     }
 }
 
