@@ -18,8 +18,7 @@ import java.io.IOException;
 
 public class AuthenticationFilter implements Filter {
     private static final Logger logger = LogManager.getLogger();
-    
-    private static final String LOGIN_PAGE = "/login";
+
     private static final String LOGIN_ACTION = "/login";
     private static final String REGISTER_ACTION = "/register";
     private static final String STATIC_RESOURCES = "/css/";
@@ -52,18 +51,18 @@ public class AuthenticationFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
 
-        if (path.equals(LOGIN_PAGE) || path.equals(LOGIN_ACTION) || path.equals(REGISTER_ACTION) 
-                || path.equals("/") || path.equals("/index.jsp") || path.startsWith(STATIC_RESOURCES) 
+        if (path.equals(LOGIN_ACTION) || path.equals(REGISTER_ACTION)
+                || path.equals("/") || path.equals("/index.jsp") || path.startsWith(STATIC_RESOURCES)
                 || path.startsWith("/api/") || path.startsWith("/locale") || path.startsWith("/pages/")
-                || path.endsWith(".css") || path.endsWith(".js") || path.endsWith(".png") 
+                || path.endsWith(".css") || path.endsWith(".js") || path.endsWith(".png")
                 || path.endsWith(".jpg") || path.endsWith(".gif") || path.endsWith(".ico")) {
             chain.doFilter(request, response);
             return;
         }
 
-        if (session == null || session.getAttribute(USER_ATTRIBUTE) == null) {
+        if (session.getAttribute(USER_ATTRIBUTE) == null) {
             logger.debug("Unauthenticated access attempt to: {}", path);
-            httpResponse.sendRedirect(contextPath + LOGIN_PAGE);
+            httpResponse.sendRedirect(contextPath + LOGIN_ACTION);
             return;
         }
         
