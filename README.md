@@ -252,12 +252,13 @@ src/
 - isValidId(Integer id) - проверка валидности ID
 - isNullOrEmpty(String str) - проверка на null или пустоту
 - areAllNotEmpty(String... strings) - проверка нескольких строк
-- ensureDefaultLocale(HttpServletRequest request)
-- getUserFromSession(HttpServletRequest request)
-- isAuthenticated(HttpServletRequest request)
-- hasRole(HttpServletRequest request, String roleName)
-- requireAuthentication(HttpServletRequest request, HttpServletResponse response)
-- 
+- ensureDefaultLocale(HttpServletRequest request) - проверка языкового отображения
+- getUserFromSession(HttpServletRequest request) - получения объекта пользователя из сессии
+- isAuthenticated(HttpServletRequest request) - проверка получения пользователя
+- hasRole(HttpServletRequest request, String roleName) - проверка получения роли пользователя
+- requireAuthentication(HttpServletRequest request, HttpServletResponse response) - проверка аутентификации
+- requireRole(HttpServletRequest request, HttpServletResponse response, String roleName) - проверка роли пользователя
+- redirectToLogin(HttpServletRequest request, HttpServletResponse response) - перенаправление на страницу аутентификации
 
 **ConnectionPool** - пул соединений с БД (Singleton):
 - Управляет пулом соединений с MySQL
