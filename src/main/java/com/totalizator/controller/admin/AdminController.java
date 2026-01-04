@@ -1,13 +1,14 @@
 package com.totalizator.controller.admin;
 
-import com.totalizator.controller.BaseController;
 import com.totalizator.controller.RoleController;
 import com.totalizator.model.Competition;
 import com.totalizator.model.Role;
 import com.totalizator.model.User;
+import com.totalizator.service.BetService;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.UserService;
 import com.totalizator.service.factory.ServiceFactory;
+import com.totalizator.util.ValidationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,18 +30,18 @@ public class AdminController extends HttpServlet implements RoleController {
     private static final ServiceFactory serviceFactory = ServiceFactory.getInstance();
     private static final CompetitionService competitionService = serviceFactory.getCompetitionService();
     private static final UserService userService = serviceFactory.getUserService();
+    private static final ValidationUtil validationUtil = new ValidationUtil();
 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        BaseController baseController = new BaseController() {};
-        if (!baseController.requireAuthentication(request, response) 
-                || !baseController.requireRole(request, response, "ADMIN")) {
+        if (!validationUtil.requireAuthentication(request, response)
+                || !validationUtil.requireRole(request, response, "ADMIN")) {
             return;
         }
         
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
         
         String pathInfo = request.getPathInfo();
         
@@ -66,7 +68,7 @@ public class AdminController extends HttpServlet implements RoleController {
             try {
                 int competitionId = Integer.parseInt(competitionIdStr);
                 competitionService.generateRandomResult(competitionId);
-                com.totalizator.service.BetService betService = 
+                BetService betService =
                         ServiceFactory.getInstance().getBetService();
                 betService.processBetsForCompetition(competitionId);
                 response.sendRedirect(request.getContextPath() + "/admin/competitions");
@@ -110,13 +112,12 @@ public class AdminController extends HttpServlet implements RoleController {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        BaseController baseController = new BaseController() {};
-        if (!baseController.requireAuthentication(request, response) 
-                || !baseController.requireRole(request, response, "ADMIN")) {
+        if (!validationUtil.requireAuthentication(request, response)
+                || !validationUtil.requireRole(request, response, "ADMIN")) {
             return;
         }
         
-        User user = baseController.getUserFromSession(request);
+        User user = validationUtil.getUserFromSession(request);
         
         String pathInfo = request.getPathInfo();
         
@@ -177,7 +178,7 @@ public class AdminController extends HttpServlet implements RoleController {
                 newUser.setFirstName(firstName);
                 newUser.setLastName(lastName);
                 newUser.setRole(role);
-                newUser.setBalance(java.math.BigDecimal.ZERO);
+                newUser.setBalance(BigDecimal.ZERO);
                 newUser.setActive(true);
                 
                 userService.register(newUser);
