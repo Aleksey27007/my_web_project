@@ -10,6 +10,7 @@ import com.totalizator.service.BetService;
 import com.totalizator.service.CompetitionService;
 import com.totalizator.service.UserService;
 import com.totalizator.service.factory.DaoFactory;
+import com.totalizator.util.ValidationUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,7 +37,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public Optional<Bet> findById(Integer id) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(id)) {
+        if (!ValidationUtil.isValidId(id)) {
             return Optional.empty();
         }
         return betDao.findById(id);
@@ -49,7 +50,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public List<Bet> findByUserId(Integer userId) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(userId)) {
+        if (!ValidationUtil.isValidId(userId)) {
             return Arrays.asList();
         }
         return betDao.findByUserId(userId);
@@ -57,7 +58,7 @@ public class BetServiceImpl implements BetService {
 
     @Override
     public List<Bet> findByCompetitionId(Integer competitionId) {
-        if (!com.totalizator.util.ValidationUtils.isValidId(competitionId)) {
+        if (!ValidationUtil.isValidId(competitionId)) {
             return Arrays.asList();
         }
         return betDao.findByCompetitionId(competitionId);
@@ -69,7 +70,7 @@ public class BetServiceImpl implements BetService {
 
         User user = bet.getUser();
         Optional<User> userOptional = userService.findById(user.getId());
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
         
@@ -103,7 +104,7 @@ public class BetServiceImpl implements BetService {
     @Override
     public boolean cancelBet(Integer betId) {
         Optional<Bet> betOptional = betDao.findById(betId);
-        if (!betOptional.isPresent()) {
+        if (betOptional.isEmpty()) {
             return false;
         }
         
@@ -135,7 +136,7 @@ public class BetServiceImpl implements BetService {
     @Override
     public int processBetsForCompetition(Integer competitionId) {
         Optional<Competition> competitionOptional = competitionService.findById(competitionId);
-        if (!competitionOptional.isPresent()) {
+        if (competitionOptional.isEmpty()) {
             logger.warn("Competition not found: {}", competitionId);
             return 0;
         }
