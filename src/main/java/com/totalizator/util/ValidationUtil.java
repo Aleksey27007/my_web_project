@@ -11,10 +11,6 @@ import java.util.Locale;
 
 public final class ValidationUtil {
 
-    public ValidationUtil() {
-        throw new UnsupportedOperationException("Utility class cannot be instantiated");
-    }
-
     public static boolean isValidId(Integer id) {
         return id != null && id > 0;
     }
@@ -51,11 +47,11 @@ public final class ValidationUtil {
         return userObj instanceof User ? (User) userObj : null;
     }
 
-    protected boolean isAuthenticated(HttpServletRequest request) {
+    private boolean isAuthenticated(HttpServletRequest request) {
         return getUserFromSession(request) != null;
     }
 
-    protected boolean hasRole(HttpServletRequest request, String roleName) {
+    private boolean hasRole(HttpServletRequest request, String roleName) {
         User user = getUserFromSession(request);
         return user != null && user.getRole() != null
                 && roleName.equals(user.getRole().getName());
@@ -79,7 +75,7 @@ public final class ValidationUtil {
         return true;
     }
 
-    protected void redirectToLogin(HttpServletRequest request, HttpServletResponse response)
+    private void redirectToLogin(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.sendRedirect(request.getContextPath() + "/login");
     }
