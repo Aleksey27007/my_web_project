@@ -4,13 +4,11 @@ import com.totalizator.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.Locale;
 
-public abstract class BaseController {
-    protected static final Logger logger = LogManager.getLogger();
+public class BaseController {
     
     protected void ensureDefaultLocale(HttpServletRequest request) {
         HttpSession session = request.getSession(true);
@@ -39,7 +37,7 @@ public abstract class BaseController {
     }
     
     public boolean requireAuthentication(HttpServletRequest request, HttpServletResponse response) 
-            throws java.io.IOException {
+            throws IOException {
         if (!isAuthenticated(request)) {
             redirectToLogin(request, response);
             return false;
@@ -48,7 +46,7 @@ public abstract class BaseController {
     }
     
     public boolean requireRole(HttpServletRequest request, HttpServletResponse response, String roleName) 
-            throws java.io.IOException {
+            throws IOException {
         if (!hasRole(request, roleName)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return false;
@@ -57,7 +55,7 @@ public abstract class BaseController {
     }
     
     protected void redirectToLogin(HttpServletRequest request, HttpServletResponse response) 
-            throws java.io.IOException {
+            throws IOException {
         response.sendRedirect(request.getContextPath() + "/login");
     }
 }
