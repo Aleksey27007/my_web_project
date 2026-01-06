@@ -75,8 +75,7 @@ public class AdminController extends HttpServlet {
             try {
                 int competitionId = Integer.parseInt(competitionIdStr);
                 competitionService.generateRandomResult(competitionId);
-                BetService betService =
-                        ServiceFactory.getInstance().getBetService();
+                BetService betService = ServiceFactory.getInstance().getBetService();
                 betService.processBetsForCompetition(competitionId);
                 response.sendRedirect(request.getContextPath() + "/admin/competitions");
             } catch (Exception e) {
