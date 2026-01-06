@@ -164,20 +164,12 @@ public class AdminController extends HttpServlet {
                     return;
                 }
 
-                Role role;
-                switch (roleName.toUpperCase()) {
-                    case "ADMIN":
-                        role = new Role(1, "ADMIN", "Администратор системы");
-                        break;
-                    case "BOOKMAKER":
-                        role = new Role(2, "BOOKMAKER", "Букмекер");
-                        break;
-                    case "CLIENT":
-                    default:
-                        role = new Role(3, "CLIENT", "Клиент");
-                        break;
-                }
-                
+                Role role = switch (roleName.toUpperCase()) {
+                    case "ADMIN" -> new Role(1, "ADMIN", "Администратор системы");
+                    case "BOOKMAKER" -> new Role(2, "BOOKMAKER", "Букмекер");
+                    default -> new Role(3, "CLIENT", "Клиент");
+                };
+
                 User newUser = new User();
                 newUser.setUsername(username);
                 newUser.setEmail(email);
@@ -222,7 +214,7 @@ public class AdminController extends HttpServlet {
                 int competitionId = Integer.parseInt(request.getParameter("id"));
                 Optional<Competition> competitionOptional = competitionService.findById(competitionId);
                 
-                if (!competitionOptional.isPresent()) {
+                if (competitionOptional.isEmpty()) {
                     request.setAttribute("error", "Competition not found");
                     List<Competition> competitions = competitionService.findAll();
                     request.setAttribute("competitions", competitions);
@@ -258,7 +250,7 @@ public class AdminController extends HttpServlet {
 
             startDateStr = startDateStr.replace("T", " ");
             if (startDateStr.length() == 16) {
-                startDateStr += ":00"; // Add seconds if missing
+                startDateStr += ":00";
             }
             competition.setStartDate(LocalDateTime.parse(startDateStr,
                 java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
